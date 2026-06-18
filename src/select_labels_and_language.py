@@ -48,8 +48,11 @@ def get_unique_labels(ds, col_name:str="privacy_mask") -> list[str]:
 def create_filtered_datasets():
     # Filter the language of the datasets to english, and keep only the relevant columns.
 
-    hf_hub_token = get_hf_hub_token()
-    login(hf_hub_token)
+    try:
+        hf_hub_token = get_hf_hub_token()
+        login(hf_hub_token)
+    except:
+        pass # loading without hf hub token. That's ok, just slow.
 
     ds300k = load_dataset("ai4privacy/pii-masking-300k")
     ds500k = load_dataset("ai4privacy/open-pii-masking-500k-ai4privacy")
