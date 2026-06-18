@@ -2,7 +2,7 @@
 ## and convert it to a new dataset following a CoLNN format compatible with HuggingFace's 
 ## Evaluator class (https://huggingface.co/docs/evaluate/v0.4.6/en/package_reference/evaluator_classes#evaluate.TokenClassificationEvaluator)
 
-from datasets import Dataset, Features, Sequence, Value, ClassLabel
+from datasets import Features, Sequence, Value, ClassLabel
 
 # For example, the following dataset format is accepted by the evaluator (and is thus the target format):
 
@@ -131,16 +131,17 @@ def format_benchmark_datasets():
 
     # Change columns and features of the dataset to match the target format.
     label_names_300k = list(model_deberta.config.id2label.values()) #label names in order of the ids.
+    features_300k = Features({
+        "tokens": Sequence(feature=Value(dtype="string")),
+        "ner_tags": Sequence(feature=ClassLabel(names=label_names_300k)),
+    })
 
-    final_benchmark_ds_300k = Dataset.from_dict(
-        mapping={
-            "tokens": benchmark_ds_300k["pre_tokenized_words"],
-            "ner_tags": benchmark_ds_300k["labels"],
-        },
-        features=Features({
-            "tokens": Sequence(feature=Value(dtype="string")), # Tokens are words (strings)
-            "ner_tags": Sequence(feature=ClassLabel(names=label_names_300k)),
-        }),
+    final_benchmark_ds_300k = (
+        benchmark_ds_300k
+        .rename_column("pre_tokenized_words", "tokens")
+        .rename_column("labels", "ner_tags")
+        .select_columns(["tokens", "ner_tags"])  # Drops source_text, privacy_mask, etc.
+        .cast(features_300k)                      # Enforces the ClassLabel string map
     )
 
     # Now, RoBERTa
@@ -156,16 +157,17 @@ def format_benchmark_datasets():
 
     # Change columns and features of the dataset to match the target format.
     label_names_500k = list(model_roberta.config.id2label.values()) #label names in order of the ids.
+    features_500k = Features({
+        "tokens": Sequence(feature=Value(dtype="string")),
+        "ner_tags": Sequence(feature=ClassLabel(names=label_names_500k)),
+    })
 
-    final_benchmark_ds_5OOk =  Dataset.from_dict(
-        mapping={
-            "tokens": benchmark_ds_5OOk["pre_tokenized_words"],
-            "ner_tags": benchmark_ds_5OOk["labels"],
-        },
-        features=Features({
-            "tokens": Sequence(feature=Value(dtype="string")), # Tokens are words (strings)
-            "ner_tags": Sequence(feature=ClassLabel(names=label_names_500k)),
-        }),
+    final_benchmark_ds_5OOk = (
+        benchmark_ds_5OOk
+        .rename_column("pre_tokenized_words", "tokens")
+        .rename_column("labels", "ner_tags")
+        .select_columns(["tokens", "ner_tags"])
+        .cast(features_500k)
     )
 
     return [(final_benchmark_ds_300k, tokenizer_deberta,model_deberta), (final_benchmark_ds_5OOk, tokenizer_roberta, model_roberta)]
