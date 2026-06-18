@@ -27,7 +27,7 @@ def load_model_and_tokenizer(model_id):
         tokenizer = AutoTokenizer.from_pretrained(model_id)
         model = AutoModelForTokenClassification.from_pretrained(model_id)
 
-        pipeline = pipeline(
+        pipe = pipeline(
             "token-classification", 
             model=model_id, 
             aggregation_strategy="first", 
@@ -42,7 +42,7 @@ def load_model_and_tokenizer(model_id):
     else:
         raise AttributeError("Unexpected model_id provided (model not yet supported).")
     
-    return tokenizer, model, pipeline
+    return tokenizer, model, pipe
 
 
 def tokenize_and_align_labels_batched(examples, tokenizer, label2id):
