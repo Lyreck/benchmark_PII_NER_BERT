@@ -80,4 +80,4 @@ Final labels for benchmark (using the label mapping to get as much as possible.)
 
 Labels to ignore when running the model trained on 300k (DeBERTa): `["USERNAME", "COUNTRY", "STATE", "PASS", "BOD", "IP", "SECADRESS", "GEOCOORD", "CARDISSUER"]`
 
-Labels to ignore when running the model trained on 500k (RoBERTa): `["AGE, "TAXNUM", "CREDITCARDNUMBER", "GENDER"]`
+Labels to ignore when running the model trained on 500k (RoBERTa): `["AGE", "TAXNUM", "CREDITCARDNUMBER", "GENDER"]`
