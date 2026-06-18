@@ -17,7 +17,7 @@ from datasets import Features, Sequence, Value, ClassLabel
 #         }),
 # )
 
-from select_labels_and_language import create_benchmark_datasets
+from .select_labels_and_language import create_benchmark_datasets
 from transformers import AutoTokenizer, AutoModelForTokenClassification, pipeline
 
 def load_model_and_tokenizer(model_id):
