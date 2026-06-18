@@ -2,6 +2,7 @@ from evaluate import evaluator
 from convert_to_evaluator import format_benchmark_datasets
 
 if __name__ == "__main__":
+    
     task_evaluator = evaluator("token-classification")
 
     [(benchmark_ds_3OOk, tokenizer_deberta,model_deberta), (benchmark_ds_5OOk, tokenizer_roberta, model_roberta)] = format_benchmark_datasets()

@@ -123,22 +123,24 @@ def format_benchmark_datasets():
     tokenizer_deberta, model_deberta, pipeline_deberta = load_model_and_tokenizer(model_id_deberta)
 
     # Tokenize sentences and attribute each token its label with the map function
-    pre_tokenized_words_300k, labels_300k = benchmark_ds_3OOk.map(
+    benchmark_ds_300k = benchmark_ds_3OOk.map(
         tokenize_and_align_labels_batched,
         batched=True,
         fn_kwargs={"tokenizer": tokenizer_deberta, "label2id": model_deberta.config.label2id}
     )
 
     # Change columns and features of the dataset to match the target format.
-    benchmark_ds_300k =  Dataset.from_dict(
+    label_names_300k = list(model_deberta.config.id2label.values()) #label names in order of the ids.
+
+    final_benchmark_ds_300k = Dataset.from_dict(
         mapping={
-            "tokens": pre_tokenized_words_300k,
-            "ner_tags": labels_300k,
+            "tokens": benchmark_ds_300k["pre_tokenized_words"],
+            "ner_tags": benchmark_ds_300k["labels"],
         },
         features=Features({
-            "tokens": Sequence(feature=Value(dtype="int")),
-            "ner_tags": Sequence(feature=ClassLabel(names=[-100] + model_deberta.config.id2label.keys())),
-            }),
+            "tokens": Sequence(feature=Value(dtype="string")), # Tokens are words (strings)
+            "ner_tags": Sequence(feature=ClassLabel(names=label_names_300k)),
+        }),
     )
 
     # Now, RoBERTa
@@ -146,25 +148,27 @@ def format_benchmark_datasets():
     tokenizer_roberta, model_roberta, pipeline_roberta = load_model_and_tokenizer(model_id_roberta)
 
     # Tokenize sentences and attribute each token its label with the map function
-    pre_tokenized_words_500k, labels_500k = benchmark_ds_5OOk.map(
+    benchmark_ds_5OOk = benchmark_ds_5OOk.map(
         tokenize_and_align_labels_batched,
         batched=True,
         fn_kwargs={"tokenizer": tokenizer_roberta, "label2id": model_roberta.config.label2id}
     )
 
     # Change columns and features of the dataset to match the target format.
-    benchmark_ds_5OOk =  Dataset.from_dict(
+    label_names_500k = list(model_roberta.config.id2label.values()) #label names in order of the ids.
+
+    final_benchmark_ds_5OOk =  Dataset.from_dict(
         mapping={
-            "tokens": pre_tokenized_words_500k,
-            "ner_tags": labels_500k,
+            "tokens": benchmark_ds_5OOk["pre_tokenized_words"],
+            "ner_tags": benchmark_ds_5OOk["labels"],
         },
         features=Features({
-            "tokens": Sequence(feature=Value(dtype="int")),
-            "ner_tags": Sequence(feature=ClassLabel(names=[-100] + model_roberta.config.id2label.keys())),
-            }),
+            "tokens": Sequence(feature=Value(dtype="string")), # Tokens are words (strings)
+            "ner_tags": Sequence(feature=ClassLabel(names=label_names_500k)),
+        }),
     )
 
-    return [(benchmark_ds_3OOk, tokenizer_deberta,model_deberta), (benchmark_ds_5OOk, tokenizer_roberta, model_roberta)]
+    return [(final_benchmark_ds_300k, tokenizer_deberta,model_deberta), (final_benchmark_ds_5OOk, tokenizer_roberta, model_roberta)]
 
 
 if __name__ == "__main__":
