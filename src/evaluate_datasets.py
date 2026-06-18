@@ -71,8 +71,8 @@ def evaluate_model_speed_and_accuracy(df, model_id, pipeline_task="token-classif
 if __name__ == "__main__":
     # Test on your 300k or 500k csv
     df_test_300k = load_and_prep_data('benchmark_ds_300k.csv').head(100) # test on first 100 lines first!
-    df_test_500k = load_and_prep_data('benchmark_ds_500k.csv').head(100) # test on first 100 lines first!
+    # df_test_500k = load_and_prep_data('benchmark_ds_500k.csv').head(100) # test on first 100 lines first!
 
     
     evaluate_model_speed_and_accuracy(df_test_300k, "yonigo/deberta-v3-base-pii-en")
-    evaluate_model_speed_and_accuracy(df_test_500k, "Ar86Bat/multilang-pii-ner")
+    # evaluate_model_speed_and_accuracy(df_test_500k, "Ar86Bat/multilang-pii-ner")

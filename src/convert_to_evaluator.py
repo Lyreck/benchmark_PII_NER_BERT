@@ -123,6 +123,7 @@ def format_benchmark_datasets():
     tokenizer_deberta, model_deberta, pipeline_deberta = load_model_and_tokenizer(model_id_deberta)
 
     # Tokenize sentences and attribute each token its label with the map function
+    print(f"Launching DeBERTa label alignment. label2id dict: {model_deberta.config.label2id}.")
     benchmark_ds_300k = benchmark_ds_3OOk.map(
         tokenize_and_align_labels_batched,
         batched=True,
