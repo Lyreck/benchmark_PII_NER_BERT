@@ -8,12 +8,12 @@ if __name__ == "__main__":
 
     results = task_evaluator.compute(
         model_or_pipeline = model_deberta,
-        data=benchmark_ds_3OOk
-        metric=seqeval
+        data=benchmark_ds_3OOk,
+        metric="seqeval"
     )
 
     results = task_evaluator.compute(
         model_or_pipeline = model_roberta,
-        data=benchmark_ds_5OOk
-        metric=seqeval
+        data=benchmark_ds_5OOk,
+        metric="seqeval"
     )
