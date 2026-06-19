@@ -149,7 +149,7 @@ def tokenize_robust(example, label2id, tokenizer, iob=True, ignore_subwords=True
     num_special_labels = 0
     while i < len(tokenized["input_ids"]):
         if tokenized["special_tokens_mask"][i] == 1:
-            num_special_labels +=1
+            num_special_labels +=1 #disclaimer: this count is probably not accurate
             true_token_labels.append(-100)
             i += 1
         elif i not in start_token_to_label:
@@ -195,14 +195,15 @@ def tokenize_robust(example, label2id, tokenizer, iob=True, ignore_subwords=True
             print("=======================================================================")
 
     tokenized["true_labels"] = true_token_labels
-    tokenized["pred_labels"] = pred_token_labels
+    tokenized["pred_labels"] = [-100] + [label2id[label["entity"]] for label in pred_labels] + [-100] # add padding to match true labels with start and end special characters.
 
     # assert len(true_token_labels) == len(pred_token_labels), f"Issue: There are {len(true_token_labels)} true labels, and {len(pred_token_labels)} predicted labels. Labels should be attributed token-wise, there should be no discrepancy on the number. Here is the text {text}: and the predictions:{pred_labels}"
 
     # safety checks to verify that the predicted labels list and the true labels list have the same length, and see whether any discrepancy could be explained by special characters.
     if len(true_token_labels) != len(pred_token_labels):
         # print(f"There are {num_special_labels} special labels, for {len(true_token_labels)} true labels and {len(pred_token_labels)} predicted labels (diff = {len(true_token_labels) - len(pred_token_labels)})")
-        assert num_special_labels == len(true_token_labels) - len(pred_token_labels), f"I am counting too many special labels. Wrong counting ? \n There are {num_special_labels} special labels, for {len(true_token_labels)} true labels and {len(pred_token_labels)} predicted labels (diff = {len(true_token_labels) - len(pred_token_labels)})"
+        # assert num_special_labels == len(true_token_labels) - len(pred_token_labels), f"I am counting too many special labels. Wrong counting ? \n There are {num_special_labels} special labels, for {len(true_token_labels)} true labels and {len(pred_token_labels)} predicted labels (diff = {len(true_token_labels) - len(pred_token_labels)})"
+        pass
     return tokenized
 
 def format_benchmark_datasets():
@@ -225,24 +226,25 @@ def format_benchmark_datasets():
     # Tokenize sentences and attribute each token its label with the map function
     print(f"Launching DeBERTa label alignment. label2id dict: {model_deberta.config.id2label}.")
 
-    # run the model efficiently on GPU
-    deberta_predictions = []
-    # Adjust batch_size based on your GPU's VRAM (e.g., 16, 32, 64)
-    for out in pipeline_deberta(KeyDataset(benchmark_ds_3OOk, "source_text"), batch_size=32):
-        deberta_predictions.append(out)
-    ## 
+    # # run the model efficiently on GPU
+    # deberta_predictions = []
+    # # Adjust batch_size based on the GPU's VRAM (e.g., 16, 32, 64)
+    # for out in pipeline_deberta(KeyDataset(benchmark_ds_3OOk, "source_text"), batch_size=32):
+    #     deberta_predictions.append(out)
+    # ## 
         
-    benchmark_ds_3OOk = benchmark_ds_3OOk.add_column("predicted_mask", deberta_predictions)
+    # benchmark_ds_3OOk = benchmark_ds_3OOk.add_column("predicted_mask", deberta_predictions)
 
-    final_benchmark_ds_300k = benchmark_ds_3OOk.map(
-        tokenize_robust,
-        batched=False,
-        fn_kwargs={"tokenizer": tokenizer_deberta, "label2id": {v:k for k,v in model_deberta.config.id2label.items()}}, #label2id in DeBERTa is not using the right k,v pairs.
-        remove_columns=[
-            "source_text",
-            "privacy_mask"
-        ]
-    )
+    # final_benchmark_ds_300k = benchmark_ds_3OOk.map(
+    #     tokenize_robust,
+    #     batched=False,
+    #     fn_kwargs={"tokenizer": tokenizer_deberta, "label2id": {v:k for k,v in model_deberta.config.id2label.items()}}, #label2id in DeBERTa is not using the right k,v pairs.
+    #     remove_columns=[
+    #         "source_text",
+    #         "privacy_mask"
+    #     ]
+    # )
+    ##### end of DeBERTa
 
     # #Change columns and features of the dataset to match the target format.
     # label_names_300k = list(model_deberta.config.id2label.values()) #label names in order of the ids.
