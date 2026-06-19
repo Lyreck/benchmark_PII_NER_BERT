@@ -144,6 +144,7 @@ def tokenize_robust(example, label2id, tokenizer, pipe, iob=True, ignore_subword
     num_special_labels = 0
     while i < len(tokenized["input_ids"]):
         if tokenized["special_tokens_mask"][i] == 1:
+            num_special_labels +=1
             true_token_labels.append(-100)
             i += 1
         elif i not in start_token_to_label:
