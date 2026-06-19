@@ -104,8 +104,8 @@ if __name__ == "__main__":
     # df_test_500k = load_and_prep_data('benchmark_ds_500k.csv').head(100) # test on first 100 lines first!
 
 
-    true_labels = df_test_300k["true_labels"]
-    predicted_labels = df_test_300k["pred_labels"]
+    true_labels = df_test_300k["true_labels"].list.flatten()
+    predicted_labels = df_test_300k["pred_labels"].list.flatten()
 
     clfreport = classification_report(true_labels, predicted_labels)
 
