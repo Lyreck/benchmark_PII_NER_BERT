@@ -123,11 +123,11 @@ def format_benchmark_datasets():
     tokenizer_deberta, model_deberta, pipeline_deberta = load_model_and_tokenizer(model_id_deberta)
 
     # Tokenize sentences and attribute each token its label with the map function
-    print(f"Launching DeBERTa label alignment. label2id dict: {model_deberta.config.label2id}.")
+    print(f"Launching DeBERTa label alignment. label2id dict: {model_deberta.config.id2label}.")
     benchmark_ds_300k = benchmark_ds_3OOk.map(
         tokenize_and_align_labels_batched,
         batched=True,
-        fn_kwargs={"tokenizer": tokenizer_deberta, "label2id": model_deberta.config.label2id}
+        fn_kwargs={"tokenizer": tokenizer_deberta, "label2id": {v:k for k,v in model_deberta.config.id2label}} #label2id in DeBERTa is not using the right k,v pairs.
     )
 
     # Change columns and features of the dataset to match the target format.
