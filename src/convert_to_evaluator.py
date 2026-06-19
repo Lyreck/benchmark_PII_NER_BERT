@@ -194,7 +194,7 @@ def tokenize_robust(example, label2id, tokenizer, pipe, iob=True, ignore_subword
     # assert len(true_token_labels) == len(pred_token_labels), f"Issue: There are {len(true_token_labels)} true labels, and {len(pred_token_labels)} predicted labels. Labels should be attributed token-wise, there should be no discrepancy on the number. Here is the text {text}: and the predictions:{pred_labels}"
 
     if len(true_token_labels) != len(pred_token_labels):
-        print(f"There are {num_special_labels} special labels, for {len(true_token_labels)} true labels and {len(pred_token_labels)} predicted labels (diff = {len(true_token_labels) - len(pred_token_labels)})")
+        # print(f"There are {num_special_labels} special labels, for {len(true_token_labels)} true labels and {len(pred_token_labels)} predicted labels (diff = {len(true_token_labels) - len(pred_token_labels)})")
         assert num_special_labels == len(true_token_labels) - len(pred_token_labels), f"I am counting too many special labels. Wrong counting ?"
     return tokenized
 
