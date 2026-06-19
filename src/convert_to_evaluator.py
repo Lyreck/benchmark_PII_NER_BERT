@@ -130,6 +130,8 @@ def is_subword(text, tokenized, tokenizer, index):
 def tokenize_robust(example, label2id, tokenizer, iob=True, ignore_subwords=True): #adapted from https://github.com/yonigottesman/pii-model/blob/main/train.py
 
     text, labels = example["source_text"], example["privacy_mask"] #runs only on one example: no batching!
+    print(text)
+    print(labels)
 
     i = 0
     token_labels = []
