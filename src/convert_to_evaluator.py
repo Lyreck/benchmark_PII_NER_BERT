@@ -232,7 +232,7 @@ def format_benchmark_datasets():
     final_benchmark_ds_5OOk = benchmark_ds_5OOk.map(
         tokenize_robust,
         batched=False,
-        fn_kwargs={"tokenizer": tokenizer_roberta, "label2id": model_roberta.config.label2id}
+        fn_kwargs={"tokenizer": tokenizer_roberta, "label2id": model_roberta.config.label2id},
         remove_columns=[
             "source_text",
             "privacy_mask"
