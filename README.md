@@ -8,13 +8,13 @@ Models to evaluate:
 
 To begin with, evaluation will only be in English. The test set will be the intersection of OpenPII 300k and 500k, since it is the training set of each of the aforementioned models (keeping only labels that intersect).
 
-The first task is to analyse both datasets' labels and only keep the intersection
+The first task is to analyse both datasets' labels and only keep the intersection.
 
 The second task is to process the dataset in order to feed it to the model and compare it to the validation labels.
 
 Then, we will be able to run the precision and speed benchmark.
 
-I'll maybe add some small tests to get a sence: 
+I'll maybe add some small tests to get a sense of some specific issues: 
 - 0.85763847 that are scores in code but could be interpreted as phone numbers (as it has been in some of my experiments)
 
 Both the models have a github repo with code. [This one](https://github.com/Ar86Bat/multilang-pii-ner) gives a code to put daa in CoNLL format.
@@ -23,7 +23,7 @@ Both the models have a github repo with code. [This one](https://github.com/Ar86
 
 Following this benchmark, I will
 - take the best model, convert it to ONNX if necessary
-- Add it to the website, preferably with a WebWroeker that runs in the "choice" and "editor" pages
+- Add it to the website, preferably with a WebWorker that runs in the "choice" and "editor" pages
 
 Following this first real-world test, I could have time to
 - finetune my own BERT model using HF's Trainer API. Tune the good pre-processing and hyperparameters. Use multiple datasets to avoid relying only on ai4privacy's sometimes ill-labeled dataset, and non-realistic situations (there's a reason why Open AI corrected the dataset and used its own synthetic data source). **I think this will be very important for precision in our case because PII might be hidden in difficult context.
