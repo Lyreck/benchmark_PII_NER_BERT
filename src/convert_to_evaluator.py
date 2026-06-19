@@ -131,6 +131,7 @@ def tokenize_robust(example, label2id, tokenizer, pipe, iob=True, ignore_subword
 
     text, labels = example["source_text"], example["privacy_mask"] #runs only on one example: no batching!
     pred_labels = pipe("text") #run the model on the text
+    print(pred_labels)
     pred_token_labels = [label2id[label["entity"]] for label in pred_labels]
 
     i = 0
