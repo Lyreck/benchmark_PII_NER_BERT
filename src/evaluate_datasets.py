@@ -4,6 +4,36 @@ import time
 from sklearn.metrics import classification_report
 from transformers import pipeline
 
+
+
+def compute_metrics(eval_pred, label_list, seqeval_metric):
+    predictions, labels = eval_pred
+    predictions = np.argmax(predictions, axis=2)
+
+    # Remove ignored index (special tokens)
+    true_predictions = [
+        [label_list[p] for (p, l) in zip(prediction, label) if l != -100]
+        for prediction, label in zip(predictions, labels)
+    ]
+    true_labels = [
+        [label_list[l] for (p, l) in zip(prediction, label) if l != -100]
+        for prediction, label in zip(predictions, labels)
+    ]
+
+    results = seqeval_metric.compute(predictions=true_predictions, references=true_labels)
+    results_flat = {f"{k}_f1": v["f1"] for k, v in results.items() if isinstance(v, dict)}
+    results_flat.update(
+        {
+            "precision": results["overall_precision"],
+            "recall": results["overall_recall"],
+            "f1": results["overall_f1"],
+            "accuracy": results["overall_accuracy"],
+        }
+    )
+    return results_flat
+
+
+
 def load_and_prep_data(csv_path):
     df = pd.read_csv(csv_path)
     # Convert string representation of lists back to actual Python lists
@@ -70,9 +100,16 @@ def evaluate_model_speed_and_accuracy(df, model_id, pipeline_task="token-classif
 
 if __name__ == "__main__":
     # Test on your 300k or 500k csv
-    df_test_300k = load_and_prep_data('benchmark_ds_300k.csv').head(100) # test on first 100 lines first!
+    df_test_300k = pd.read_csv('benchmark_ds_300k.csv').head(100) # test on first 100 lines first!
     # df_test_500k = load_and_prep_data('benchmark_ds_500k.csv').head(100) # test on first 100 lines first!
 
+
+    true_labels = df_test_300k["true_labels"]
+    predicted_labels = df_test_300k["pred_labels"]
+
+    clfreport = classification_report(true_labels, predicted_labels)
+
+    print(clfreport)
     
-    evaluate_model_speed_and_accuracy(df_test_300k, "yonigo/deberta-v3-base-pii-en")
+    # evaluate_model_speed_and_accuracy(df_test_300k, "yonigo/deberta-v3-base-pii-en")
     # evaluate_model_speed_and_accuracy(df_test_500k, "Ar86Bat/multilang-pii-ner")
