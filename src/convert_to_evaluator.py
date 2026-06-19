@@ -174,8 +174,9 @@ def tokenize_robust(example, label2id, tokenizer, iob=True, ignore_subwords=True
             i = j
         
     if num_labels_added!=len(labels):
+            id2label = {v:k for k,v in label2id.items()}
             print(f"There might be an issue. Length of privacy mask: {len(labels)}. Number of labels added: {num_labels_added}")
-            print(f"Tokenized words and spans: {tokenized}")
+            print(f"Added labels: {[(tokenizer.decode(input),id2label[l]) for input,l in zip(tokenized["input_ids"],token_labels)]}")
             print(f"Privacy mask: {labels}")
             print("=======================================================================")
 
@@ -200,7 +201,11 @@ def format_benchmark_datasets():
     final_benchmark_ds_300k = benchmark_ds_3OOk.map(
         tokenize_robust,
         batched=False,
-        fn_kwargs={"tokenizer": tokenizer_deberta, "label2id": {v:k for k,v in model_deberta.config.id2label.items()}} #label2id in DeBERTa is not using the right k,v pairs.
+        fn_kwargs={"tokenizer": tokenizer_deberta, "label2id": {v:k for k,v in model_deberta.config.id2label.items()}}, #label2id in DeBERTa is not using the right k,v pairs.
+        remove_columns=[
+            "source_text",
+            "privacy_mask"
+        ]
     )
 
     print(final_benchmark_ds_300k)
