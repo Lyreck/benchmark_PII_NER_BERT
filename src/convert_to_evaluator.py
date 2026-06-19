@@ -150,7 +150,6 @@ def tokenize_robust(example, label2id, tokenizer, pipe, iob=True, ignore_subword
         elif i not in start_token_to_label:
             if ignore_subwords and is_subword(text, tokenized, tokenizer, i):
                 true_token_labels.append(-100)
-                num_special_labels +=1
             else:
                 true_token_labels.append(label2id["O"])
             i += 1
@@ -196,7 +195,7 @@ def tokenize_robust(example, label2id, tokenizer, pipe, iob=True, ignore_subword
 
     if len(true_token_labels) != len(pred_token_labels):
         print(f"There are {num_special_labels} special labels, for {len(true_token_labels)} true labels and {len(pred_token_labels)} predicted labels (diff = {len(true_token_labels) - len(pred_token_labels)})")
-
+        assert num_special_labels == len(true_token_labels) - len(pred_token_labels), f"I am counting too many special labels. Wrong counting ?"
     return tokenized
 
 def format_benchmark_datasets():
