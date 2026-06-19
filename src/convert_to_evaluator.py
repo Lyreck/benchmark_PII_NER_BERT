@@ -30,14 +30,14 @@ def load_model_and_tokenizer(model_id):
         pipe = pipeline(
             "token-classification", 
             model=model_id, 
-            aggregation_strategy="first", 
+            aggregation_strategy="none", 
             ignore_labels=["USERNAME", "COUNTRY", "STATE", "PASS", "BOD", "IP", "SECADRESS", "GEOCOORD", "CARDISSUER"]
             )
 
     elif model_id == "Ar86Bat/multilang-pii-ner":
         tokenizer = AutoTokenizer.from_pretrained(model_id)
         model = AutoModelForTokenClassification.from_pretrained(model_id)
-        pipe = pipeline("ner", model=model, tokenizer=tokenizer, aggregation_strategy="first", ignore_labels=["AGE", "TAXNUM", "CREDITCARDNUMBER", "GENDER"])
+        pipe = pipeline("ner", model=model, tokenizer=tokenizer, aggregation_strategy="none", ignore_labels=["AGE", "TAXNUM", "CREDITCARDNUMBER", "GENDER"])
 
     else:
         raise AttributeError("Unexpected model_id provided (model not yet supported).")
@@ -45,78 +45,78 @@ def load_model_and_tokenizer(model_id):
     return tokenizer, model, pipe
 
 
-def tokenize_and_align_labels_batched(examples, tokenizer, label2id):
-    """
-    Batched version of tokenization and alignment for dataset.map(batched=True). 
-    Adapted from https://colab.research.google.com/github/huggingface/notebooks/blob/master/examples/token_classification.ipynb#scrollTo=vc0BSBLIIrJQ
-    """
-    # Initialize lists to store the batched outputs
-    batch_words = []
-    batch_labels = []
+# def tokenize_and_align_labels_batched(examples, tokenizer, label2id):
+#     """
+#     Batched version of tokenization and alignment for dataset.map(batched=True). 
+#     Adapted from https://colab.research.google.com/github/huggingface/notebooks/blob/master/examples/token_classification.ipynb#scrollTo=vc0BSBLIIrJQ
+#     """
+#     # Initialize lists to store the batched outputs
+#     batch_words = []
+#     batch_labels = []
 
-    # Access the underlying Hugging Face pre-tokenizer
-    pre_tokenizer = tokenizer._tokenizer.pre_tokenizer
+#     # Access the underlying Hugging Face pre-tokenizer
+#     pre_tokenizer = tokenizer._tokenizer.pre_tokenizer
 
-    # Iterate through each example in the batch
-    for i in range(len(examples['source_text'])):
-        source_text = examples['source_text'][i]
-        privacy_mask = examples['privacy_mask'][i]
+#     # Iterate through each example in the batch
+#     for i in range(len(examples['source_text'])):
+#         source_text = examples['source_text'][i]
+#         privacy_mask = examples['privacy_mask'][i]
 
-        # 1. Pre-tokenize the current string
-        pre_tokenized = pre_tokenizer.pre_tokenize_str(source_text)
-        pre_tokenized_words = [w for w, span in pre_tokenized]
-        pre_tokenized_spans = [span for w, span in pre_tokenized]
+#         # 1. Pre-tokenize the current string
+#         pre_tokenized = pre_tokenizer.pre_tokenize_str(source_text)
+#         pre_tokenized_words = [w for w, span in pre_tokenized]
+#         pre_tokenized_spans = [span for w, span in pre_tokenized]
 
-        # 2. Assign labels to each word according to the offsets
-        labels = []
-        label_idx = 0
-        #print(f"Privacy mask: {privacy_mask}")
-        # Sanity check: verify that the len of privacy mask is equal to the number of labels being added.
-        # print(f"Length of Privacy mask = {len(privacy_mask)}")
-        num_of_labels_added=0
-        if len(privacy_mask) != 0:  # if there are labeled entities
-            for j, w in enumerate(pre_tokenized_words):
-                span = pre_tokenized_spans[j]
-                start, end = span[0], span[1]
+#         # 2. Assign labels to each word according to the offsets
+#         labels = []
+#         label_idx = 0
+#         #print(f"Privacy mask: {privacy_mask}")
+#         # Sanity check: verify that the len of privacy mask is equal to the number of labels being added.
+#         # print(f"Length of Privacy mask = {len(privacy_mask)}")
+#         num_of_labels_added=0
+#         if len(privacy_mask) != 0:  # if there are labeled entities
+#             for j, w in enumerate(pre_tokenized_words):
+#                 span = pre_tokenized_spans[j]
+#                 start, end = span[0], span[1]
 
-                # Safeguard against running out of labels in the privacy_mask list
-                if label_idx < len(privacy_mask):
-                    next_non_O_label = privacy_mask[label_idx]
-                else:
-                    next_non_O_label = None
+#                 # Safeguard against running out of labels in the privacy_mask list
+#                 if label_idx < len(privacy_mask):
+#                     next_non_O_label = privacy_mask[label_idx]
+#                 else:
+#                     next_non_O_label = None
 
-                if start == end:  # special character or empty span
-                    labels.append(-100)
+#                 if start == end:  # special character or empty span
+#                     labels.append(-100)
 
-                elif next_non_O_label and (start >= next_non_O_label['start']) and (end <= next_non_O_label['end']):
-                    #print(f"Adding label {next_non_O_label["label"]} to word/token {w}")
-                    num_of_labels_added +=1
-                    labels.append(label2id[f"B-{next_non_O_label["label"]}"]) #[TODO] potential issue xhen evaluating; whatabout I- tags ?
+#                 elif next_non_O_label and (start >= next_non_O_label['start']) and (end <= next_non_O_label['end']):
+#                     #print(f"Adding label {next_non_O_label["label"]} to word/token {w}")
+#                     num_of_labels_added +=1
+#                     labels.append(label2id[f"B-{next_non_O_label["label"]}"]) #[TODO] potential issue xhen evaluating; whatabout I- tags ?
                     
-                    # If we reached or passed the end of the current entity, move to the next one
-                    if end >= next_non_O_label['end']:
-                        label_idx += 1
-                else:
-                    labels.append(label2id["O"])
-        else:
-            # If there are no labeled entities, everything is labeled as "O"
-            labels = [label2id["O"] for _ in pre_tokenized_words]
+#                     # If we reached or passed the end of the current entity, move to the next one
+#                     if end >= next_non_O_label['end']:
+#                         label_idx += 1
+#                 else:
+#                     labels.append(label2id["O"])
+#         else:
+#             # If there are no labeled entities, everything is labeled as "O"
+#             labels = [label2id["O"] for _ in pre_tokenized_words]
 
-        #print(f"Number of labels added = {num_of_labels_added}")
-        if num_of_labels_added!=len(privacy_mask):
-            print(f"There might be an issue. Length of privacy mask: {len(privacy_mask)}. Number of labels added: {num_of_labels_added}")
-            print(f"Pre-tokenized words and spans: {pre_tokenized}")
-            print(f"Privacy mask: {privacy_mask}")
-            print("=======================================================================")
-        # Append this example's results to our batch lists
-        batch_words.append(pre_tokenized_words)
-        batch_labels.append(labels)
+#         #print(f"Number of labels added = {num_of_labels_added}")
+#         if num_of_labels_added!=len(privacy_mask):
+#             print(f"There might be an issue. Length of privacy mask: {len(privacy_mask)}. Number of labels added: {num_of_labels_added}")
+#             print(f"Pre-tokenized words and spans: {pre_tokenized}")
+#             print(f"Privacy mask: {privacy_mask}")
+#             print("=======================================================================")
+#         # Append this example's results to our batch lists
+#         batch_words.append(pre_tokenized_words)
+#         batch_labels.append(labels)
 
-    # dataset.map expects a dictionary of lists when batched=True
-    return {
-        "pre_tokenized_words": batch_words,
-        "labels": batch_labels
-    }
+#     # dataset.map expects a dictionary of lists when batched=True
+#     return {
+#         "pre_tokenized_words": batch_words,
+#         "labels": batch_labels
+#     }
 
 # trying the alignment function of yonigo. The approach sounds more robust.
 
@@ -127,13 +127,14 @@ def is_subword(text, tokenized, tokenizer, index):
     is_subword = len(word) != len(word_ref)
     return is_subword
 
-def tokenize_robust(example, label2id, tokenizer, iob=True, ignore_subwords=True): #adapted from https://github.com/yonigottesman/pii-model/blob/main/train.py
+def tokenize_robust(example, label2id, tokenizer, pipe, iob=True, ignore_subwords=True): #adapted from https://github.com/yonigottesman/pii-model/blob/main/train.py
 
     text, labels = example["source_text"], example["privacy_mask"] #runs only on one example: no batching!
-
+    pred_labels = pipe("text") #run the model on the text
+    pred_token_labels = [label2id[label["entity"]] for label in pred_labels]
 
     i = 0
-    token_labels = []
+    true_token_labels = []
 
     tokenized = tokenizer(text, return_offsets_mapping=True, return_special_tokens_mask=True)
     start_token_to_label = {
@@ -142,13 +143,13 @@ def tokenize_robust(example, label2id, tokenizer, iob=True, ignore_subwords=True
     num_labels_added = 0
     while i < len(tokenized["input_ids"]):
         if tokenized["special_tokens_mask"][i] == 1:
-            token_labels.append(-100)
+            true_token_labels.append(-100)
             i += 1
         elif i not in start_token_to_label:
             if ignore_subwords and is_subword(text, tokenized, tokenizer, i):
-                token_labels.append(-100)
+                true_token_labels.append(-100)
             else:
-                token_labels.append(label2id["O"])
+                true_token_labels.append(label2id["O"])
             i += 1
         else:
             start, end, label = start_token_to_label[i]
@@ -158,20 +159,20 @@ def tokenize_robust(example, label2id, tokenizer, iob=True, ignore_subwords=True
             while j < (len(tokenized["input_ids"]) - 1) and tokenized.token_to_chars(j).start < end:
                 if j == start_token:
                     if iob:
-                        token_labels.append(label2id["B-" + label])
+                        true_token_labels.append(label2id["B-" + label])
                         num_labels_added +=1
                     else:
-                        token_labels.append(label2id[label])
+                        true_token_labels.append(label2id[label])
                 elif ignore_subwords and is_subword(text, tokenized, tokenizer, j):
-                    token_labels.append(-100)
+                    true_token_labels.append(-100)
                 else:
                     if iob:
                         if label in ["PASSPORTNUM", "AGE", "CREDITCARDNUMBER", "GENDER", "IDCARDNUM", "SEX"]: #special case for 500k dataset: RoBERTa model does not have I-labels for these elements in its id2label.
-                            token_labels.append(label2id["B-" + label])
+                            true_token_labels.append(label2id["B-" + label])
                         else:
-                            token_labels.append(label2id["I-" + label])
+                            true_token_labels.append(label2id["I-" + label])
                     else:
-                        token_labels.append(label2id[label])
+                        true_token_labels.append(label2id[label])
 
                 j += 1
             i = j
@@ -184,7 +185,11 @@ def tokenize_robust(example, label2id, tokenizer, iob=True, ignore_subwords=True
             print(f"Privacy mask: {labels}")
             print("=======================================================================")
 
-    tokenized["labels"] = token_labels
+    tokenized["true_labels"] = true_token_labels
+    tokenized["pred_labels"] = pred_token_labels
+
+    assert len(true_token_labels) == len(pred_token_labels), f"Issue: There are {len(true_token_labels)} true labels, and {len(pred_token_labels)} predicted labels. Labels should be attributed token-wise, there should be no discrepancy on the number."
+
     return tokenized
 
 def format_benchmark_datasets():
@@ -205,7 +210,7 @@ def format_benchmark_datasets():
     final_benchmark_ds_300k = benchmark_ds_3OOk.map(
         tokenize_robust,
         batched=False,
-        fn_kwargs={"tokenizer": tokenizer_deberta, "label2id": {v:k for k,v in model_deberta.config.id2label.items()}}, #label2id in DeBERTa is not using the right k,v pairs.
+        fn_kwargs={"tokenizer": tokenizer_deberta, "label2id": {v:k for k,v in model_deberta.config.id2label.items()}, "pipe":pipeline_deberta}, #label2id in DeBERTa is not using the right k,v pairs.
         remove_columns=[
             "source_text",
             "privacy_mask"
@@ -237,7 +242,7 @@ def format_benchmark_datasets():
     final_benchmark_ds_5OOk = benchmark_ds_5OOk.map(
         tokenize_robust,
         batched=False,
-        fn_kwargs={"tokenizer": tokenizer_roberta, "label2id": model_roberta.config.label2id},
+        fn_kwargs={"tokenizer": tokenizer_roberta, "label2id": model_roberta.config.label2id, "pipe":pipeline_roberta},
         remove_columns=[
             "source_text",
             "privacy_mask"
