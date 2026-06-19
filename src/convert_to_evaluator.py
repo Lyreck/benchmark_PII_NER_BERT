@@ -166,7 +166,11 @@ def tokenize_robust(example, label2id, tokenizer, iob=True, ignore_subwords=True
                     token_labels.append(-100)
                 else:
                     if iob:
-                        token_labels.append(label2id["I-" + label])
+                        if label in ["PASSPORTNUM", "AGE", "CREDITCARDNUMBER", "GENDER", "IDCARDNUM", "SEX"]: #special case for 500k dataset: RoBERTa model does not have I-labels for these elements in its id2label.
+                            token_labels.append(label2id["B-" + label])
+                            num_labels_added +=1
+                        else:
+                            token_labels.append(label2id["I-" + label])
                     else:
                         token_labels.append(label2id[label])
 

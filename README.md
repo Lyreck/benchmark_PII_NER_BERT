@@ -54,7 +54,7 @@ Following this first real-world test, I could have time to
     'BUILDINGNUM', 'TITLE', 'PASSPORTNUM', 
     'CREDITCARDNUMBER', 'GENDER']
 ```
-
+Important remark: if 500k model, then the following labels DO NOT exist: ["I-PASSPORTNUM", "I-AGE", "I-CREDITCARDNUMBER", "I-GENDER", "I-IDCARDNUM", "I-SEX"].
 
 Present in 300k AND in 500k: `TIME, DATE, EMAIL, STREET, CITY, SEX, TITLE`
 Present in 300k and NOT in 500k: `USERNAME, LASTNAME1, LASTNAME2, COUNTRY, BUILDING, STATE, PASS, PASSPORT, TEL, DRIVERLICENSE, BOD (??), IP, SECADRESS, LASTNAME3, GIVENNAME1, GEOCOORD, CARDISSUER`
@@ -81,3 +81,4 @@ Final labels for benchmark (using the label mapping to get as much as possible.)
 Labels to ignore when running the model trained on 300k (DeBERTa): `["USERNAME", "COUNTRY", "STATE", "PASS", "BOD", "IP", "SECADRESS", "GEOCOORD", "CARDISSUER"]`
 
 Labels to ignore when running the model trained on 500k (RoBERTa): `["AGE", "TAXNUM", "CREDITCARDNUMBER", "GENDER"]`
+
