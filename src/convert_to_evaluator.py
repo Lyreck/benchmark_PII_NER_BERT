@@ -228,6 +228,8 @@ def format_benchmark_datasets():
     model_id_roberta = "Ar86Bat/multilang-pii-ner"
     tokenizer_roberta, model_roberta, pipeline_roberta = load_model_and_tokenizer(model_id_roberta)
 
+    print(f"label2id for RoBERTa: {model_roberta.config.label2id}")
+
     # Tokenize sentences and attribute each token its label with the map function
     final_benchmark_ds_5OOk = benchmark_ds_5OOk.map(
         tokenize_robust,
