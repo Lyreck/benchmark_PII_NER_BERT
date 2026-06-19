@@ -28,7 +28,7 @@ def load_model_and_tokenizer(model_id):
         model = AutoModelForTokenClassification.from_pretrained(model_id)
 
         pipe = pipeline(
-            "token-classification", 
+            "ner", 
             model=model_id, 
             aggregation_strategy="none", 
             ignore_labels=["USERNAME", "COUNTRY", "STATE", "PASS", "BOD", "IP", "SECADRESS", "GEOCOORD", "CARDISSUER"]
