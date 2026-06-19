@@ -19,8 +19,12 @@ from datasets import Features, Sequence, Value, ClassLabel
 
 from .select_labels_and_language import create_benchmark_datasets
 from transformers import AutoTokenizer, AutoModelForTokenClassification, pipeline
+from transformers.pipelines.pt_utils import KeyDataset
+import torch
 
 def load_model_and_tokenizer(model_id):
+
+    device = 0 if torch.cuda.is_available() else -1 #CPU fallback
 
     if model_id == "yonigo/deberta-v3-base-pii-en":
 
@@ -31,13 +35,14 @@ def load_model_and_tokenizer(model_id):
             "ner", 
             model=model_id, 
             aggregation_strategy="none", 
-            ignore_labels=["USERNAME", "COUNTRY", "STATE", "PASS", "BOD", "IP", "SECADRESS", "GEOCOORD", "CARDISSUER"]
+            ignore_labels=["USERNAME", "COUNTRY", "STATE", "PASS", "BOD", "IP", "SECADRESS", "GEOCOORD", "CARDISSUER"],
+            device=device
             )
 
     elif model_id == "Ar86Bat/multilang-pii-ner":
         tokenizer = AutoTokenizer.from_pretrained(model_id)
         model = AutoModelForTokenClassification.from_pretrained(model_id)
-        pipe = pipeline("ner", model=model, tokenizer=tokenizer, aggregation_strategy="none", ignore_labels=["AGE", "TAXNUM", "CREDITCARDNUMBER", "GENDER"])
+        pipe = pipeline("ner", model=model, tokenizer=tokenizer, aggregation_strategy="none", ignore_labels=["AGE", "TAXNUM", "CREDITCARDNUMBER", "GENDER"], device=device)
 
     else:
         raise AttributeError("Unexpected model_id provided (model not yet supported).")
@@ -209,6 +214,10 @@ def format_benchmark_datasets():
 
     benchmark_ds_3OOk, benchmark_ds_5OOk = create_benchmark_datasets()
 
+    # Filter empty strings: This prevents the 'ValueError: At least one input is required' error
+    benchmark_ds_3OOk = benchmark_ds_3OOk.filter(lambda x: x["source_text"] is not None and len(x["source_text"].strip()) > 0)
+    benchmark_ds_5OOk = benchmark_ds_5OOk.filter(lambda x: x["source_text"] is not None and len(x["source_text"].strip()) > 0)
+
     # Start with DeBERTa
     model_id_deberta = "yonigo/deberta-v3-base-pii-en"
     tokenizer_deberta, model_deberta, pipeline_deberta = load_model_and_tokenizer(model_id_deberta)
@@ -216,7 +225,14 @@ def format_benchmark_datasets():
     # Tokenize sentences and attribute each token its label with the map function
     print(f"Launching DeBERTa label alignment. label2id dict: {model_deberta.config.id2label}.")
 
-    benchmark_ds_3OOk["predicted_mask"] = pipeline_deberta(benchmark_ds_3OOk["source_text"])
+    # run the model efficiently on GPU
+    deberta_predictions = []
+    # Adjust batch_size based on your GPU's VRAM (e.g., 16, 32, 64)
+    for out in pipeline_deberta(KeyDataset(benchmark_ds_3OOk, "source_text"), batch_size=32):
+        deberta_predictions.append(out)
+    ## 
+        
+    benchmark_ds_3OOk = benchmark_ds_3OOk.add_column("predicted_mask", deberta_predictions)
 
     final_benchmark_ds_300k = benchmark_ds_3OOk.map(
         tokenize_robust,
@@ -246,9 +262,15 @@ def format_benchmark_datasets():
     # Now, RoBERTa
     model_id_roberta = "Ar86Bat/multilang-pii-ner"
     tokenizer_roberta, model_roberta, pipeline_roberta = load_model_and_tokenizer(model_id_roberta)
-    benchmark_ds_5OOk["predicted_mask"] = pipeline_roberta(benchmark_ds_5OOk["source_text"])
 
     print(f"label2id for RoBERTa: {model_roberta.config.label2id}")
+
+    # batched predictions with RoBERTa
+    roberta_predictions = []
+    for out in pipeline_roberta(KeyDataset(benchmark_ds_5OOk, "source_text"), batch_size=32):
+        roberta_predictions.append(out)
+        
+    benchmark_ds_5OOk = benchmark_ds_5OOk.add_column("predicted_mask", roberta_predictions)
 
     # Tokenize sentences and attribute each token its label with the map function
     final_benchmark_ds_5OOk = benchmark_ds_5OOk.map(
@@ -260,6 +282,8 @@ def format_benchmark_datasets():
             "privacy_mask"
         ]
     )
+
+    print(final_benchmark_ds_3OOk)
 
     print(final_benchmark_ds_5OOk)
 
