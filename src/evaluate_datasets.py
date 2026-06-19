@@ -99,17 +99,25 @@ def evaluate_model_speed_and_accuracy(df, model_id, pipeline_task="token-classif
     print(classification_report(y_true, y_pred, zero_division=0))
 
 if __name__ == "__main__":
-    # Test on your 300k or 500k csv
-    df_test_300k = pd.read_csv('benchmark_ds_300k.csv').head(100) # test on first 100 lines first!
-    # df_test_500k = load_and_prep_data('benchmark_ds_500k.csv').head(100) # test on first 100 lines first!
+    # Test on your 300k 
+    # 1. Load the data
+    df_test_300k = pd.read_csv('benchmark_ds_300k.csv').head(100)
 
+    # 2. Convert the stringified lists back into actual Python lists
+    df_test_300k["true_labels"] = df_test_300k["true_labels"].apply(ast.literal_eval)
+    df_test_300k["pred_labels"] = df_test_300k["pred_labels"].apply(ast.literal_eval)
 
-    true_labels = df_test_300k["true_labels"].list.flatten()
-    predicted_labels = df_test_300k["pred_labels"].list.flatten()
+    # 3. Flatten the lists AND filter out the -100 tokens simultaneously
+    true_labels_flat = []
+    pred_labels_flat = []
 
-    clfreport = classification_report(true_labels, predicted_labels)
+    for true_seq, pred_seq in zip(df_test_300k["true_labels"], df_test_300k["pred_labels"]):
+        # Iterate through pairs of (true, predicted) tokens in each sentence
+        for true_token, pred_token in zip(true_seq, pred_seq):
+            if true_token != -100:  # Ignore special tokens and subwords
+                true_labels_flat.append(true_token)
+                pred_labels_flat.append(pred_token)
 
+    # 4. Generate the classification report
+    clfreport = classification_report(true_labels_flat, pred_labels_flat)
     print(clfreport)
-    
-    # evaluate_model_speed_and_accuracy(df_test_300k, "yonigo/deberta-v3-base-pii-en")
-    # evaluate_model_speed_and_accuracy(df_test_500k, "Ar86Bat/multilang-pii-ner")
