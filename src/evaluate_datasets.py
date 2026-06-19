@@ -157,7 +157,7 @@ if __name__ == "__main__":
                 pred_labels_flat.append(pred_token)
 
     # 4. Generate the classification report
-    clfreport = classification_report(true_labels_flat, pred_labels_flat, labels=[k for k in id2label_deberta.keys()], target_names=[v for v in id2label_deberta.valuess()])
+    clfreport = classification_report(true_labels_flat, pred_labels_flat, labels=[k for k in id2label_deberta.keys()], target_names=[v for v in id2label_deberta.values()])
     print(clfreport)
 
 
