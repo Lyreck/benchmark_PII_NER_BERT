@@ -102,10 +102,10 @@ def tokenize_and_align_labels_batched(examples, tokenizer, label2id):
             # If there are no labeled entities, everything is labeled as "O"
             labels = [label2id["O"] for _ in pre_tokenized_words]
 
-        print(f"Number of labels added = {num_of_labels_added}")
+        #print(f"Number of labels added = {num_of_labels_added}")
         if num_of_labels_added!=len(privacy_mask):
             print(f"There might be an issue. Length of privacy mask: {len(privacy_mask)}. Number of labels added: {num_of_labels_added}")
-            print(f"Pre-tokenized words and spans: {[(word, span) for word,span in zip(pre_tokenized_words, pre_tokenized_spans)]}")
+            print(f"Pre-tokenized words and spans: {pre_tokenized}")
             print(f"Privacy mask: {privacy_mask}")
             print("=======================================================================")
         # Append this example's results to our batch lists
@@ -117,6 +117,70 @@ def tokenize_and_align_labels_batched(examples, tokenizer, label2id):
         "pre_tokenized_words": batch_words,
         "labels": batch_labels
     }
+
+# trying the alignment function of yonigo. The approach sounds more robust.
+
+def is_subword(text, tokenized, tokenizer, index):
+    word = tokenizer.convert_ids_to_tokens(tokenized["input_ids"][index])
+    start_ind, end_ind = tokenized["offset_mapping"][index]
+    word_ref = text[start_ind:end_ind]
+    is_subword = len(word) != len(word_ref)
+    return is_subword
+
+def tokenize_robust(example, label2id, tokenizer, iob=True, ignore_subwords=True): #adapted from https://github.com/yonigottesman/pii-model/blob/main/train.py
+
+    text, labels = example["source_text"], example["privacy_mask"] #runs only on one example: no batching!
+
+    i = 0
+    token_labels = []
+
+    tokenized = tokenizer(text, return_offsets_mapping=True, return_special_tokens_mask=True)
+    start_token_to_label = {
+        tokenized.char_to_token(label["start"]): (label["start"], label["end"], label["label"]) for label in labels
+    }
+    num_labels_added = 0
+    while i < len(tokenized["input_ids"]):
+        if tokenized["special_tokens_mask"][i] == 1:
+            token_labels.append(-100)
+            i += 1
+        elif i not in start_token_to_label:
+            if ignore_subwords and is_subword(text, tokenized, tokenizer, i):
+                token_labels.append(-100)
+            else:
+                token_labels.append(label2id["O"])
+            i += 1
+        else:
+            start, end, label = start_token_to_label[i]
+            start_token = tokenized.char_to_token(start)
+            assert start_token == i
+            j = start_token
+            while j < (len(tokenized["input_ids"]) - 1) and tokenized.token_to_chars(j).start < end:
+                if j == start_token:
+                    if iob:
+                        token_labels.append(label2id["B-" + label])
+                        num_labels_added +=1
+                    else:
+                        token_labels.append(label2id[label])
+                elif ignore_subwords and is_subword(text, tokenized, tokenizer, j):
+                    token_labels.append(-100)
+                else:
+                    if iob:
+                        token_labels.append(label2id["I-" + label])
+                        num_labels_added +=1
+                    else:
+                        token_labels.append(label2id[label])
+
+                j += 1
+            i = j
+        
+    if num_labels_added!=len(labels):
+            print(f"There might be an issue. Length of privacy mask: {len(labels)}. Number of labels added: {num_labels_added}")
+            print(f"Tokenized words and spans: {tokenized}")
+            print(f"Privacy mask: {labels}")
+            print("=======================================================================")
+
+    tokenized["labels"] = token_labels
+    return tokenized
 
 def format_benchmark_datasets():
     """Start from the benchmark datasets with good languages and labels, and format them such that they can be used with HuggingFace's Evaluator.
@@ -133,54 +197,57 @@ def format_benchmark_datasets():
 
     # Tokenize sentences and attribute each token its label with the map function
     print(f"Launching DeBERTa label alignment. label2id dict: {model_deberta.config.id2label}.")
-    benchmark_ds_300k = benchmark_ds_3OOk.map(
-        tokenize_and_align_labels_batched,
+    final_benchmark_ds_300k = benchmark_ds_3OOk.map(
+        tokenize_robust,
         batched=True,
         fn_kwargs={"tokenizer": tokenizer_deberta, "label2id": {v:k for k,v in model_deberta.config.id2label.items()}} #label2id in DeBERTa is not using the right k,v pairs.
     )
 
-    # Change columns and features of the dataset to match the target format.
-    label_names_300k = list(model_deberta.config.id2label.values()) #label names in order of the ids.
-    features_300k = Features({
-        "tokens": Sequence(feature=Value(dtype="string")),
-        "ner_tags": Sequence(feature=ClassLabel(names=label_names_300k)),
-    })
-
-    final_benchmark_ds_300k = (
-        benchmark_ds_300k
-        .rename_column("pre_tokenized_words", "tokens")
-        .rename_column("labels", "ner_tags")
-        .select_columns(["tokens", "ner_tags"])  # Drops source_text, privacy_mask, etc.
-        .cast(features_300k)                      # Enforces the ClassLabel string map
-    )
-
-    # Now, RoBERTa
-    model_id_roberta = "Ar86Bat/multilang-pii-ner"
-    tokenizer_roberta, model_roberta, pipeline_roberta = load_model_and_tokenizer(model_id_roberta)
-
-    # Tokenize sentences and attribute each token its label with the map function
-    benchmark_ds_5OOk = benchmark_ds_5OOk.map(
-        tokenize_and_align_labels_batched,
-        batched=True,
-        fn_kwargs={"tokenizer": tokenizer_roberta, "label2id": model_roberta.config.label2id}
-    )
+    print(final_benchmark_ds_300k)
 
     # Change columns and features of the dataset to match the target format.
-    label_names_500k = list(model_roberta.config.id2label.values()) #label names in order of the ids.
-    features_500k = Features({
-        "tokens": Sequence(feature=Value(dtype="string")),
-        "ner_tags": Sequence(feature=ClassLabel(names=label_names_500k)),
-    })
+    # label_names_300k = list(model_deberta.config.id2label.values()) #label names in order of the ids.
+    # features_300k = Features({
+    #     "tokens": Sequence(feature=Value(dtype="string")),
+    #     "ner_tags": Sequence(feature=ClassLabel(names=label_names_300k)),
+    # })
 
-    final_benchmark_ds_5OOk = (
-        benchmark_ds_5OOk
-        .rename_column("pre_tokenized_words", "tokens")
-        .rename_column("labels", "ner_tags")
-        .select_columns(["tokens", "ner_tags"])
-        .cast(features_500k)
-    )
+    # final_benchmark_ds_300k = (
+    #     benchmark_ds_300k
+    #     .rename_column("pre_tokenized_words", "tokens")
+    #     .rename_column("labels", "ner_tags")
+    #     .select_columns(["tokens", "ner_tags"])  # Drops source_text, privacy_mask, etc.
+    #     .cast(features_300k)                      # Enforces the ClassLabel string map
+    # )
 
-    return [(final_benchmark_ds_300k, tokenizer_deberta,model_deberta), (final_benchmark_ds_5OOk, tokenizer_roberta, model_roberta)]
+    # # Now, RoBERTa
+    # model_id_roberta = "Ar86Bat/multilang-pii-ner"
+    # tokenizer_roberta, model_roberta, pipeline_roberta = load_model_and_tokenizer(model_id_roberta)
+
+    # # Tokenize sentences and attribute each token its label with the map function
+    # benchmark_ds_5OOk = benchmark_ds_5OOk.map(
+    #     tokenize_and_align_labels_batched,
+    #     batched=True,
+    #     fn_kwargs={"tokenizer": tokenizer_roberta, "label2id": model_roberta.config.label2id}
+    # )
+
+    # # Change columns and features of the dataset to match the target format.
+    # label_names_500k = list(model_roberta.config.id2label.values()) #label names in order of the ids.
+    # features_500k = Features({
+    #     "tokens": Sequence(feature=Value(dtype="string")),
+    #     "ner_tags": Sequence(feature=ClassLabel(names=label_names_500k)),
+    # })
+
+    # final_benchmark_ds_5OOk = (
+    #     benchmark_ds_5OOk
+    #     .rename_column("pre_tokenized_words", "tokens")
+    #     .rename_column("labels", "ner_tags")
+    #     .select_columns(["tokens", "ner_tags"])
+    #     .cast(features_500k)
+    # )
+
+    # return [(final_benchmark_ds_300k, tokenizer_deberta,model_deberta), (final_benchmark_ds_5OOk, tokenizer_roberta, model_roberta)]
+    return [(final_benchmark_ds_300k, tokenizer_deberta,model_deberta), (-1, -1, -1)]
 
 
 if __name__ == "__main__":
