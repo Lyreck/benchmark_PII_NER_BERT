@@ -197,7 +197,7 @@ def tokenize_robust(example, label2id, tokenizer, iob=True, ignore_subwords=True
     # safety checks to verify that the predicted labels list and the true labels list have the same length, and see whether any discrepancy could be explained by special characters.
     if len(true_token_labels) != len(pred_token_labels):
         # print(f"There are {num_special_labels} special labels, for {len(true_token_labels)} true labels and {len(pred_token_labels)} predicted labels (diff = {len(true_token_labels) - len(pred_token_labels)})")
-        assert num_special_labels == len(true_token_labels) - len(pred_token_labels), f"I am counting too many special labels. Wrong counting ?"
+        assert num_special_labels == len(true_token_labels) - len(pred_token_labels), f"I am counting too many special labels. Wrong counting ? \n There are {num_special_labels} special labels, for {len(true_token_labels)} true labels and {len(pred_token_labels)} predicted labels (diff = {len(true_token_labels) - len(pred_token_labels)})"
     return tokenized
 
 def format_benchmark_datasets():
