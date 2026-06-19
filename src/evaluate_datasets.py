@@ -101,7 +101,7 @@ def evaluate_model_speed_and_accuracy(df, model_id, pipeline_task="token-classif
 if __name__ == "__main__":
     # Test on your 300k 
     # 1. Load the data
-    df_test_300k = pd.read_parquet('benchmark_ds_300k.parquet').head(100)
+    df_test_300k = pd.read_parquet('benchmark_ds_300k.parquet')#.head(100)
 
     id2label_deberta = {
         "1": "I-BUILDING",
@@ -165,7 +165,7 @@ if __name__ == "__main__":
     ### and for RoBERTa !
 
     # 1. Load the data
-    df_test_500k = pd.read_parquet('benchmark_ds_500k.parquet').head(100)
+    df_test_500k = pd.read_parquet('benchmark_ds_500k.parquet')#.head(100)
 
     id2label_roberta = {
         "1": "B-BUILDINGNUM",
