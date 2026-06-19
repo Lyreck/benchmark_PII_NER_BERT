@@ -243,7 +243,6 @@ def format_benchmark_datasets():
             "privacy_mask"
         ]
     )
-    ##### end of DeBERTa
 
     # #Change columns and features of the dataset to match the target format.
     # label_names_300k = list(model_deberta.config.id2label.values()) #label names in order of the ids.
@@ -313,7 +312,7 @@ if __name__ == "__main__":
 
     print(benchmark_ds_3OOk["input_ids"])
     print("===========================")
-    print(benchmark_ds_3OOk["labels"])
+    print(benchmark_ds_3OOk["true_labels"])
 
     ## Export datasets. Next step: evaluate using HuggingFace's Evaluator !
     benchmark_ds_3OOk.to_csv('benchmark_ds_300k.csv')
