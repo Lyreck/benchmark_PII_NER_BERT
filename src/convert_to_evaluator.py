@@ -176,7 +176,7 @@ def tokenize_robust(example, label2id, tokenizer, iob=True, ignore_subwords=True
     if num_labels_added!=len(labels):
             id2label = {v:k for k,v in label2id.items()}
             id2label[-100] = "SPEC"
-            print(f"There might be an issue. Length of privacy mask: {len(labels)}. Number of labels added: {num_labels_added}")
+            print(f"There might be an issue. Length of privacy mask: {len(labels)}. Number of labels added: {num_labels_added}. However, note that this might just be due to the dataset's flaws: it contains some overlapping labels and annotation errors.")
             print(f"Added labels: {[(tokenizer.decode(input),id2label[l]) for input,l in zip(tokenized["input_ids"],token_labels)]}")
             print(f"Privacy mask: {labels}")
             print("=======================================================================")
@@ -209,9 +209,7 @@ def format_benchmark_datasets():
         ]
     )
 
-    print(final_benchmark_ds_300k)
-
-    # Change columns and features of the dataset to match the target format.
+    # #Change columns and features of the dataset to match the target format.
     # label_names_300k = list(model_deberta.config.id2label.values()) #label names in order of the ids.
     # features_300k = Features({
     #     "tokens": Sequence(feature=Value(dtype="string")),
@@ -226,16 +224,22 @@ def format_benchmark_datasets():
     #     .cast(features_300k)                      # Enforces the ClassLabel string map
     # )
 
-    # # Now, RoBERTa
-    # model_id_roberta = "Ar86Bat/multilang-pii-ner"
-    # tokenizer_roberta, model_roberta, pipeline_roberta = load_model_and_tokenizer(model_id_roberta)
+    # Now, RoBERTa
+    model_id_roberta = "Ar86Bat/multilang-pii-ner"
+    tokenizer_roberta, model_roberta, pipeline_roberta = load_model_and_tokenizer(model_id_roberta)
 
-    # # Tokenize sentences and attribute each token its label with the map function
-    # benchmark_ds_5OOk = benchmark_ds_5OOk.map(
-    #     tokenize_and_align_labels_batched,
-    #     batched=True,
-    #     fn_kwargs={"tokenizer": tokenizer_roberta, "label2id": model_roberta.config.label2id}
-    # )
+    # Tokenize sentences and attribute each token its label with the map function
+    final_benchmark_ds_5OOk = benchmark_ds_5OOk.map(
+        tokenize_robust,
+        batched=False,
+        fn_kwargs={"tokenizer": tokenizer_roberta, "label2id": model_roberta.config.label2id}
+        remove_columns=[
+            "source_text",
+            "privacy_mask"
+        ]
+    )
+
+    print(final_benchmark_ds_5OOk)
 
     # # Change columns and features of the dataset to match the target format.
     # label_names_500k = list(model_roberta.config.id2label.values()) #label names in order of the ids.
@@ -252,9 +256,7 @@ def format_benchmark_datasets():
     #     .cast(features_500k)
     # )
 
-    # return [(final_benchmark_ds_300k, tokenizer_deberta,model_deberta), (final_benchmark_ds_5OOk, tokenizer_roberta, model_roberta)]
-    return [(final_benchmark_ds_300k, tokenizer_deberta,model_deberta), (-1, -1, -1)]
-
+    return [(final_benchmark_ds_300k, tokenizer_deberta,model_deberta), (final_benchmark_ds_5OOk, tokenizer_roberta, model_roberta)]
 
 if __name__ == "__main__":
 
