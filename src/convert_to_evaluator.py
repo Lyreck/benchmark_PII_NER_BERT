@@ -130,8 +130,7 @@ def is_subword(text, tokenized, tokenizer, index):
 def tokenize_robust(example, label2id, tokenizer, iob=True, ignore_subwords=True): #adapted from https://github.com/yonigottesman/pii-model/blob/main/train.py
 
     text, labels = example["source_text"], example["privacy_mask"] #runs only on one example: no batching!
-    print(text)
-    print(labels)
+
 
     i = 0
     token_labels = []
@@ -201,7 +200,7 @@ def format_benchmark_datasets():
     print(f"Launching DeBERTa label alignment. label2id dict: {model_deberta.config.id2label}.")
     final_benchmark_ds_300k = benchmark_ds_3OOk.map(
         tokenize_robust,
-        batched=True,
+        batched=False,
         fn_kwargs={"tokenizer": tokenizer_deberta, "label2id": {v:k for k,v in model_deberta.config.id2label.items()}} #label2id in DeBERTa is not using the right k,v pairs.
     )
 
