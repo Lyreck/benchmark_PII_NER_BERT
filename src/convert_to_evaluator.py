@@ -70,8 +70,10 @@ def tokenize_and_align_labels_batched(examples, tokenizer, label2id):
         # 2. Assign labels to each word according to the offsets
         labels = []
         label_idx = 0
-        print(f"Privacy mask: {privacy_mask}")
-
+        #print(f"Privacy mask: {privacy_mask}")
+        # Sanity check: verify that the len of privacy mask is equal to the number of labels being added.
+        print(f"Length of Privacy mask = {len(privacy_mask)}")
+        num_of_labels_added=0
         if len(privacy_mask) != 0:  # if there are labeled entities
             for j, w in enumerate(pre_tokenized_words):
                 span = pre_tokenized_spans[j]
@@ -87,8 +89,9 @@ def tokenize_and_align_labels_batched(examples, tokenizer, label2id):
                     labels.append(-100)
 
                 elif next_non_O_label and (start >= next_non_O_label['start']) and (end <= next_non_O_label['end']):
-                    print(f"Adding label {next_non_O_label["label"]} to word/token {w}")
-                    labels.append(label2id[f"B-{next_non_O_label["label"]}"])
+                    #print(f"Adding label {next_non_O_label["label"]} to word/token {w}")
+                    num_of_labels_added +=1
+                    labels.append(label2id[f"B-{next_non_O_label["label"]}"]) #[TODO] potential issue xhen evaluating; whatabout I- tags ?
                     
                     # If we reached or passed the end of the current entity, move to the next one
                     if end >= next_non_O_label['end']:
@@ -176,7 +179,9 @@ def format_benchmark_datasets():
 
 if __name__ == "__main__":
 
-    benchmark_ds_3OOk, benchmark_ds_5OOk = format_benchmark_datasets()
+    out = format_benchmark_datasets()
+
+    benchmark_ds_3OOk, benchmark_ds_5OOk = out[0][0], out[1][0]
 
     ## Export datasets. Next step: evaluate using HuggingFace's Evaluator !
     benchmark_ds_3OOk.to_csv('benchmark_ds_300k.csv')
