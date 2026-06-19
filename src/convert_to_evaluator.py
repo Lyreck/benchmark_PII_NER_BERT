@@ -131,8 +131,6 @@ def tokenize_robust(example, label2id, tokenizer, pipe, iob=True, ignore_subword
 
     text, labels = example["source_text"], example["privacy_mask"] #runs only on one example: no batching!
     pred_labels = pipe(text) #run the model on the text
-    print(text)
-    print(pred_labels)
     pred_token_labels = [label2id[label["entity"]] for label in pred_labels]
 
     i = 0
@@ -190,7 +188,7 @@ def tokenize_robust(example, label2id, tokenizer, pipe, iob=True, ignore_subword
     tokenized["true_labels"] = true_token_labels
     tokenized["pred_labels"] = pred_token_labels
 
-    assert len(true_token_labels) == len(pred_token_labels), f"Issue: There are {len(true_token_labels)} true labels, and {len(pred_token_labels)} predicted labels. Labels should be attributed token-wise, there should be no discrepancy on the number."
+    assert len(true_token_labels) == len(pred_token_labels), f"Issue: There are {len(true_token_labels)} true labels, and {len(pred_token_labels)} predicted labels. Labels should be attributed token-wise, there should be no discrepancy on the number. Here is the text {text}: and the predictions:{pred_labels}"
 
     return tokenized
 
