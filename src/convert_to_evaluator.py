@@ -127,7 +127,7 @@ def format_benchmark_datasets():
     benchmark_ds_300k = benchmark_ds_3OOk.map(
         tokenize_and_align_labels_batched,
         batched=True,
-        fn_kwargs={"tokenizer": tokenizer_deberta, "label2id": {v:k for k,v in model_deberta.config.id2label}} #label2id in DeBERTa is not using the right k,v pairs.
+        fn_kwargs={"tokenizer": tokenizer_deberta, "label2id": {v:k for k,v in model_deberta.config.id2label.items()}} #label2id in DeBERTa is not using the right k,v pairs.
     )
 
     # Change columns and features of the dataset to match the target format.
