@@ -283,7 +283,7 @@ def format_benchmark_datasets():
         ]
     )
 
-    print(final_benchmark_ds_3OOk)
+    print(final_benchmark_ds_300k)
 
     print(final_benchmark_ds_5OOk)
 
