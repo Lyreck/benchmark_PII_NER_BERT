@@ -103,6 +103,11 @@ def tokenize_and_align_labels_batched(examples, tokenizer, label2id):
             labels = [label2id["O"] for _ in pre_tokenized_words]
 
         print(f"Number of labels added = {num_of_labels_added}")
+        if num_of_labels_added!=len(privacy_mask):
+            print(f"There might be an issue. Length of privacy mask: {len(privacy_mask)}. Number of labels added: {num_of_labels_added}")
+            print(f"Pre-tokenized words: {pre_tokenized_words}")
+            print(f"Privacy mask: {privacy_mask}")
+            print("=======================================================================")
         # Append this example's results to our batch lists
         batch_words.append(pre_tokenized_words)
         batch_labels.append(labels)
