@@ -127,10 +127,10 @@ def is_subword(text, tokenized, tokenizer, index):
     is_subword = len(word) != len(word_ref)
     return is_subword
 
-def tokenize_robust(example, label2id, tokenizer, pipe, iob=True, ignore_subwords=True): #adapted from https://github.com/yonigottesman/pii-model/blob/main/train.py
+def tokenize_robust(example, label2id, tokenizer, iob=True, ignore_subwords=True): #adapted from https://github.com/yonigottesman/pii-model/blob/main/train.py
 
     text, labels = example["source_text"], example["privacy_mask"] #runs only on one example: no batching!
-    pred_labels = pipe(text) #run the model on the text
+    pred_labels = example["predicted_mask"] #run the model on the text
     pred_token_labels = [label2id[label["entity"]] for label in pred_labels]
 
     i = 0
@@ -180,6 +180,7 @@ def tokenize_robust(example, label2id, tokenizer, pipe, iob=True, ignore_subword
                 j += 1
             i = j
         
+    # safety checks on the number of labels added to the "real" labels.
     if num_labels_added!=len(labels):
             id2label = {v:k for k,v in label2id.items()}
             id2label[-100] = "SPEC"
@@ -193,6 +194,7 @@ def tokenize_robust(example, label2id, tokenizer, pipe, iob=True, ignore_subword
 
     # assert len(true_token_labels) == len(pred_token_labels), f"Issue: There are {len(true_token_labels)} true labels, and {len(pred_token_labels)} predicted labels. Labels should be attributed token-wise, there should be no discrepancy on the number. Here is the text {text}: and the predictions:{pred_labels}"
 
+    # safety checks to verify that the predicted labels list and the true labels list have the same length, and see whether any discrepancy could be explained by special characters.
     if len(true_token_labels) != len(pred_token_labels):
         # print(f"There are {num_special_labels} special labels, for {len(true_token_labels)} true labels and {len(pred_token_labels)} predicted labels (diff = {len(true_token_labels) - len(pred_token_labels)})")
         assert num_special_labels == len(true_token_labels) - len(pred_token_labels), f"I am counting too many special labels. Wrong counting ?"
@@ -213,10 +215,13 @@ def format_benchmark_datasets():
 
     # Tokenize sentences and attribute each token its label with the map function
     print(f"Launching DeBERTa label alignment. label2id dict: {model_deberta.config.id2label}.")
+
+    benchmark_ds_3OOk["predicted_mask"] = pipeline_deberta(benchmark_ds_3OOk["source_text"])
+
     final_benchmark_ds_300k = benchmark_ds_3OOk.map(
         tokenize_robust,
         batched=False,
-        fn_kwargs={"tokenizer": tokenizer_deberta, "label2id": {v:k for k,v in model_deberta.config.id2label.items()}, "pipe":pipeline_deberta}, #label2id in DeBERTa is not using the right k,v pairs.
+        fn_kwargs={"tokenizer": tokenizer_deberta, "label2id": {v:k for k,v in model_deberta.config.id2label.items()}}, #label2id in DeBERTa is not using the right k,v pairs.
         remove_columns=[
             "source_text",
             "privacy_mask"
@@ -241,6 +246,7 @@ def format_benchmark_datasets():
     # Now, RoBERTa
     model_id_roberta = "Ar86Bat/multilang-pii-ner"
     tokenizer_roberta, model_roberta, pipeline_roberta = load_model_and_tokenizer(model_id_roberta)
+    benchmark_ds_5OOk["predicted_mask"] = pipeline_roberta(benchmark_ds_5OOk["source_text"])
 
     print(f"label2id for RoBERTa: {model_roberta.config.label2id}")
 
@@ -248,7 +254,7 @@ def format_benchmark_datasets():
     final_benchmark_ds_5OOk = benchmark_ds_5OOk.map(
         tokenize_robust,
         batched=False,
-        fn_kwargs={"tokenizer": tokenizer_roberta, "label2id": model_roberta.config.label2id, "pipe":pipeline_roberta},
+        fn_kwargs={"tokenizer": tokenizer_roberta, "label2id": model_roberta.config.label2id},
         remove_columns=[
             "source_text",
             "privacy_mask"
