@@ -102,6 +102,7 @@ def tokenize_and_align_labels_batched(examples, tokenizer, label2id):
             # If there are no labeled entities, everything is labeled as "O"
             labels = [label2id["O"] for _ in pre_tokenized_words]
 
+        print(f"Number of labels added = {num_of_labels_added}")
         # Append this example's results to our batch lists
         batch_words.append(pre_tokenized_words)
         batch_labels.append(labels)
