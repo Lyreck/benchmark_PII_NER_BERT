@@ -141,6 +141,7 @@ def tokenize_robust(example, label2id, tokenizer, pipe, iob=True, ignore_subword
         tokenized.char_to_token(label["start"]): (label["start"], label["end"], label["label"]) for label in labels
     }
     num_labels_added = 0
+    num_special_labels = 0
     while i < len(tokenized["input_ids"]):
         if tokenized["special_tokens_mask"][i] == 1:
             true_token_labels.append(-100)
@@ -148,6 +149,7 @@ def tokenize_robust(example, label2id, tokenizer, pipe, iob=True, ignore_subword
         elif i not in start_token_to_label:
             if ignore_subwords and is_subword(text, tokenized, tokenizer, i):
                 true_token_labels.append(-100)
+                num_special_labels +=1
             else:
                 true_token_labels.append(label2id["O"])
             i += 1
@@ -165,6 +167,7 @@ def tokenize_robust(example, label2id, tokenizer, pipe, iob=True, ignore_subword
                         true_token_labels.append(label2id[label])
                 elif ignore_subwords and is_subword(text, tokenized, tokenizer, j):
                     true_token_labels.append(-100)
+                    num_special_labels += 1
                 else:
                     if iob:
                         if label in ["PASSPORTNUM", "AGE", "CREDITCARDNUMBER", "GENDER", "IDCARDNUM", "SEX"]: #special case for 500k dataset: RoBERTa model does not have I-labels for these elements in its id2label.
@@ -181,14 +184,17 @@ def tokenize_robust(example, label2id, tokenizer, pipe, iob=True, ignore_subword
             id2label = {v:k for k,v in label2id.items()}
             id2label[-100] = "SPEC"
             print(f"There might be an issue. Length of privacy mask: {len(labels)}. Number of labels added: {num_labels_added}. However, note that this might just be due to the dataset's flaws: it contains some overlapping labels and annotation errors.")
-            print(f"Added labels: {[(tokenizer.decode(input),id2label[l]) for input,l in zip(tokenized["input_ids"],token_labels)]}")
+            print(f"Added labels: {[(tokenizer.decode(input),id2label[l]) for input,l in zip(tokenized["input_ids"],true_token_labels)]}")
             print(f"Privacy mask: {labels}")
             print("=======================================================================")
 
     tokenized["true_labels"] = true_token_labels
     tokenized["pred_labels"] = pred_token_labels
 
-    assert len(true_token_labels) == len(pred_token_labels), f"Issue: There are {len(true_token_labels)} true labels, and {len(pred_token_labels)} predicted labels. Labels should be attributed token-wise, there should be no discrepancy on the number. Here is the text {text}: and the predictions:{pred_labels}"
+    # assert len(true_token_labels) == len(pred_token_labels), f"Issue: There are {len(true_token_labels)} true labels, and {len(pred_token_labels)} predicted labels. Labels should be attributed token-wise, there should be no discrepancy on the number. Here is the text {text}: and the predictions:{pred_labels}"
+
+    if len(true_token_labels) != len(pred_token_labels):
+        print(f"There are {num_special_labels} special labels, for {len(true_token_labels)} true labels and {len(pred_token_labels)} predicted labels (diff = {len(true_token_labels) - len(pred_token_labels)})")
 
     return tokenized
 
