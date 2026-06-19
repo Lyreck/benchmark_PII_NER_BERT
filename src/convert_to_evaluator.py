@@ -172,7 +172,6 @@ def tokenize_robust(example, label2id, tokenizer, iob=True, ignore_subwords=True
                         true_token_labels.append(label2id[label])
                 elif ignore_subwords and is_subword(text, tokenized, tokenizer, j):
                     true_token_labels.append(-100)
-                    num_special_labels += 1
                 else:
                     if iob:
                         if label in ["PASSPORTNUM", "AGE", "CREDITCARDNUMBER", "GENDER", "IDCARDNUM", "SEX"]: #special case for 500k dataset: RoBERTa model does not have I-labels for these elements in its id2label.
@@ -203,7 +202,7 @@ def tokenize_robust(example, label2id, tokenizer, iob=True, ignore_subwords=True
     if len(true_token_labels) != len(pred_token_labels):
         # print(f"There are {num_special_labels} special labels, for {len(true_token_labels)} true labels and {len(pred_token_labels)} predicted labels (diff = {len(true_token_labels) - len(pred_token_labels)})")
         # assert num_special_labels == len(true_token_labels) - len(pred_token_labels), f"I am counting too many special labels. Wrong counting ? \n There are {num_special_labels} special labels, for {len(true_token_labels)} true labels and {len(pred_token_labels)} predicted labels (diff = {len(true_token_labels) - len(pred_token_labels)})"
-        pass
+        pass 
     return tokenized
 
 def format_benchmark_datasets():
@@ -226,24 +225,24 @@ def format_benchmark_datasets():
     # Tokenize sentences and attribute each token its label with the map function
     print(f"Launching DeBERTa label alignment. label2id dict: {model_deberta.config.id2label}.")
 
-    # # run the model efficiently on GPU
-    # deberta_predictions = []
-    # # Adjust batch_size based on the GPU's VRAM (e.g., 16, 32, 64)
-    # for out in pipeline_deberta(KeyDataset(benchmark_ds_3OOk, "source_text"), batch_size=32):
-    #     deberta_predictions.append(out)
-    # ## 
+    # run the model efficiently on GPU
+    deberta_predictions = []
+    # Adjust batch_size based on the GPU's VRAM (e.g., 16, 32, 64)
+    for out in pipeline_deberta(KeyDataset(benchmark_ds_3OOk, "source_text"), batch_size=32):
+        deberta_predictions.append(out)
+    ## 
         
-    # benchmark_ds_3OOk = benchmark_ds_3OOk.add_column("predicted_mask", deberta_predictions)
+    benchmark_ds_3OOk = benchmark_ds_3OOk.add_column("predicted_mask", deberta_predictions)
 
-    # final_benchmark_ds_300k = benchmark_ds_3OOk.map(
-    #     tokenize_robust,
-    #     batched=False,
-    #     fn_kwargs={"tokenizer": tokenizer_deberta, "label2id": {v:k for k,v in model_deberta.config.id2label.items()}}, #label2id in DeBERTa is not using the right k,v pairs.
-    #     remove_columns=[
-    #         "source_text",
-    #         "privacy_mask"
-    #     ]
-    # )
+    final_benchmark_ds_300k = benchmark_ds_3OOk.map(
+        tokenize_robust,
+        batched=False,
+        fn_kwargs={"tokenizer": tokenizer_deberta, "label2id": {v:k for k,v in model_deberta.config.id2label.items()}}, #label2id in DeBERTa is not using the right k,v pairs.
+        remove_columns=[
+            "source_text",
+            "privacy_mask"
+        ]
+    )
     ##### end of DeBERTa
 
     # #Change columns and features of the dataset to match the target format.
