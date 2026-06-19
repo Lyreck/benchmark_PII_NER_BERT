@@ -7,8 +7,8 @@ from transformers import pipeline
 def load_and_prep_data(csv_path):
     df = pd.read_csv(csv_path)
     # Convert string representation of lists back to actual Python lists
-    df['tokens'] = df['tokens'].apply(ast.literal_eval)
-    df['ner_tags'] = df['ner_tags'].apply(ast.literal_eval)
+    df['tokens'] = df['input_ids'].apply(ast.literal_eval)
+    df['ner_tags'] = df['labels'].apply(ast.literal_eval)
     return df
 
 def evaluate_model_speed_and_accuracy(df, model_id, pipeline_task="token-classification"):
