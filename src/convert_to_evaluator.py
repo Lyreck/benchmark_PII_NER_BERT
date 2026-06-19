@@ -315,7 +315,7 @@ if __name__ == "__main__":
     print(benchmark_ds_3OOk["true_labels"])
 
     ## Export datasets. Next step: evaluate using HuggingFace's Evaluator !
-    benchmark_ds_3OOk.to_csv('benchmark_ds_300k.csv')
-    benchmark_ds_5OOk.to_csv('benchmark_ds_500k.csv')
+    benchmark_ds_3OOk.to_parquet('benchmark_ds_300k.parquet')
+    benchmark_ds_5OOk.to_parquet('benchmark_ds_500k.parquet')
 
 
