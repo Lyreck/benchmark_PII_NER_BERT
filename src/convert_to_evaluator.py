@@ -167,7 +167,6 @@ def tokenize_robust(example, label2id, tokenizer, iob=True, ignore_subwords=True
                 else:
                     if iob:
                         token_labels.append(label2id["I-" + label])
-                        num_labels_added +=1
                     else:
                         token_labels.append(label2id[label])
 
