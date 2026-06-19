@@ -269,6 +269,10 @@ if __name__ == "__main__":
 
     benchmark_ds_3OOk, benchmark_ds_5OOk = out[0][0], out[1][0]
 
+    print(benchmark_ds_3OOk["input_ids"])
+    print("===========================")
+    print(benchmark_ds_3OOk["labels"])
+
     ## Export datasets. Next step: evaluate using HuggingFace's Evaluator !
     benchmark_ds_3OOk.to_csv('benchmark_ds_300k.csv')
     benchmark_ds_5OOk.to_csv('benchmark_ds_500k.csv')
