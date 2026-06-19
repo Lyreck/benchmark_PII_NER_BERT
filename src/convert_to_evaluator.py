@@ -263,7 +263,7 @@ def format_benchmark_datasets():
     model_id_roberta = "Ar86Bat/multilang-pii-ner"
     tokenizer_roberta, model_roberta, pipeline_roberta = load_model_and_tokenizer(model_id_roberta)
 
-    print(f"label2id for RoBERTa: {model_roberta.config.label2id}")
+    print(f"Launching RoBERTa label alignment. label2id dict: {model_roberta.config.label2id}")
 
     # batched predictions with RoBERTa
     roberta_predictions = []

@@ -101,13 +101,9 @@ def evaluate_model_speed_and_accuracy(df, model_id, pipeline_task="token-classif
 if __name__ == "__main__":
     # Test on your 300k 
     # 1. Load the data
-    df_test_300k = pd.read_csv('benchmark_ds_300k.csv').head(100)
+    df_test_300k = pd.read_parquet('benchmark_ds_300k.parquet').head(100)
 
-    # 2. Convert the stringified lists back into actual Python lists
-    df_test_300k["true_labels"] = df_test_300k["true_labels"].apply(ast.literal_eval)
-    df_test_300k["pred_labels"] = df_test_300k["pred_labels"].apply(ast.literal_eval)
-
-    # 3. Flatten the lists AND filter out the -100 tokens simultaneously
+    # 2. Flatten the lists AND filter out the -100 tokens simultaneously
     true_labels_flat = []
     pred_labels_flat = []
 
