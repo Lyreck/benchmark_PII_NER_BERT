@@ -175,6 +175,7 @@ def tokenize_robust(example, label2id, tokenizer, iob=True, ignore_subwords=True
         
     if num_labels_added!=len(labels):
             id2label = {v:k for k,v in label2id.items()}
+            id2label[-100] = "SPEC"
             print(f"There might be an issue. Length of privacy mask: {len(labels)}. Number of labels added: {num_labels_added}")
             print(f"Added labels: {[(tokenizer.decode(input),id2label[l]) for input,l in zip(tokenized["input_ids"],token_labels)]}")
             print(f"Privacy mask: {labels}")
