@@ -272,16 +272,16 @@ if __name__ == "__main__":
 
     replicate_original_benchmark() #create the original datasets only filtered to english and restrictive classes.
 
-    # out = format_benchmark_datasets()
+    out = format_benchmark_datasets()
 
-    # benchmark_ds_3OOk, benchmark_ds_5OOk = out[0][0], out[1][0]
+    benchmark_ds_3OOk, benchmark_ds_5OOk = out[0][0], out[1][0]
 
-    # print(benchmark_ds_3OOk["input_ids"])
-    # print("===========================")
-    # print(benchmark_ds_3OOk["true_labels"])
+    print(benchmark_ds_3OOk["input_ids"])
+    print("===========================")
+    print(benchmark_ds_3OOk["true_labels"])
 
-    # ## Export datasets. Next step: evaluate using HuggingFace's Evaluator !
-    # benchmark_ds_3OOk.to_parquet('benchmark_ds_300k.parquet')
-    # benchmark_ds_5OOk.to_parquet('benchmark_ds_500k.parquet')
+    ## Export datasets. Next step: evaluate using HuggingFace's Evaluator !
+    benchmark_ds_3OOk.to_parquet('benchmark_ds_300k.parquet')
+    benchmark_ds_5OOk.to_parquet('benchmark_ds_500k.parquet')
 
 
