@@ -193,8 +193,8 @@ def replicate_original_benchmark():
     print(final_benchmark_ds_300k)
     print(final_benchmark_ds_5OOk)
     
-    benchmark_ds_3OOk.to_parquet('benchmark_ds_300k_only.parquet')
-    benchmark_ds_5OOk.to_parquet('benchmark_ds_500k_only.parquet')
+    final_benchmark_ds_300k.to_parquet('benchmark_ds_300k_only.parquet')
+    final_benchmark_ds_5OOk.to_parquet('benchmark_ds_500k_only.parquet')
 
     return [(final_benchmark_ds_300k, tokenizer_deberta,model_deberta), (final_benchmark_ds_5OOk, tokenizer_roberta, model_roberta)]
 
