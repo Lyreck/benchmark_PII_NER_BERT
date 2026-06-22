@@ -35,7 +35,7 @@ def load_model_and_tokenizer(model_id):
             "ner", 
             model=model_id, 
             aggregation_strategy="none", 
-            ignore_labels=["USERNAME", "COUNTRY", "STATE", "PASS", "BOD", "IP", "SECADRESS", "GEOCOORD", "CARDISSUER"],
+            ignore_labels=["USERNAME", "COUNTRY", "STATE", "PASS", "BOD", "IP", "SECADDRESS", "GEOCOORD", "CARDISSUER"],
             device=device
             )
 

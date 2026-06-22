@@ -7,7 +7,7 @@ from transformers import pipeline
 
 
 
-def compute_metrics(eval_pred, label_list, seqeval_metric):
+def compute_metrics(eval_pred, label_list, seqeval_metric): #from Yonego
     predictions, labels = eval_pred
     predictions = np.argmax(predictions, axis=2)
 
@@ -163,7 +163,7 @@ def run_original_benchmark():
     # 4. Generate the classification report
     print("---------------------------------------------------------------")
     print("DeBERTa classification report, original training dataset only:")
-    clfreport = classification_report(true_labels_flat, pred_labels_flat, labels=[k for k in id2label_deberta.keys()], target_names=[v for v in id2label_deberta.values()])
+    clfreport = classification_report(true_labels_flat, pred_labels_flat, labels=[int(k) for k in id2label_deberta.keys()], target_names=[v for v in id2label_deberta.values()])
     print(clfreport)
 
 
@@ -288,7 +288,7 @@ def run_our_benchmark():
     # 4. Generate the classification report
     print("------------------------------------------------------------------------")
     print("DeBERTa classification report, original concatenated 300k+500k datasets:")
-    clfreport = classification_report(true_labels_flat, pred_labels_flat, labels=[k for k in id2label_deberta.keys()], target_names=[v for v in id2label_deberta.values()])
+    clfreport = classification_report(true_labels_flat, pred_labels_flat, labels=[int(k) for k in id2label_deberta.keys()], target_names=[v for v in id2label_deberta.values()])
     print(clfreport)
 
 
@@ -345,7 +345,7 @@ def run_our_benchmark():
     # 4. Generate the classification report
     print("------------------------------------------------------------------------")
     print("RoBERTa classification report, original concatenated 500k+300k datasets:")
-    clfreport = classification_report(true_labels_flat, pred_labels_flat, labels = [k for k in id2label_roberta.keys()], target_names= [v for v in id2label_roberta.values()])
+    clfreport = classification_report(true_labels_flat, pred_labels_flat, labels = [int(k) for k in id2label_roberta.keys()], target_names= [v for v in id2label_roberta.values()])
     print(clfreport)
 
 
