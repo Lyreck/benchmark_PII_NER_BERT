@@ -114,7 +114,7 @@ def tokenize_robust(example, label2id, tokenizer, iob=True, ignore_subwords=True
                     true_token_labels.append(-100)
                 else:
                     if iob:
-                        if (label in ["PASSPORTNUM", "AGE", "CREDITCARDNUMBER", "GENDER", "IDCARDNUM", "SEX"]) and model_id == "yonigo/deberta-v3-base-pii-en": #special case for 500k dataset: RoBERTa model does not have I-labels for these elements in its id2label.
+                        if (label in ["PASSPORTNUM", "AGE", "CREDITCARDNUMBER", "GENDER", "IDCARDNUM", "SEX"]) and model_id == "Ar86Bat/multilang-pii-ner": #special case for 500k dataset: RoBERTa model does not have I-labels for these elements in its id2label.
                             true_token_labels.append(label2id["B-" + label])
                         else:
                             true_token_labels.append(label2id["I-" + label])
@@ -196,7 +196,7 @@ def replicate_original_benchmark():
     final_benchmark_ds_5OOk = benchmark_ds_5OOk.map(
         tokenize_robust,
         batched=False,
-        fn_kwargs={"tokenizer": tokenizer_roberta, "label2id": model_roberta.config.label2id},
+        fn_kwargs={"tokenizer": tokenizer_roberta, "label2id": model_roberta.config.label2id, "model_id":model_id_roberta},
         remove_columns=[
             "source_text",
             "privacy_mask"
@@ -269,7 +269,7 @@ def format_benchmark_datasets():
     final_benchmark_ds_5OOk = benchmark_ds_5OOk.map(
         tokenize_robust,
         batched=False,
-        fn_kwargs={"tokenizer": tokenizer_roberta, "label2id": model_roberta.config.label2id},
+        fn_kwargs={"tokenizer": tokenizer_roberta, "label2id": model_roberta.config.label2id, "model_id":model_id_roberta},
         remove_columns=[
             "source_text",
             "privacy_mask"
