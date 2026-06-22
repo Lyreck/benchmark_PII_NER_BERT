@@ -59,7 +59,20 @@ def is_subword(text, tokenized, tokenizer, index):
     is_subword = len(word) != len(word_ref)
     return is_subword
 
-def tokenize_robust(example, label2id, tokenizer, iob=True, ignore_subwords=True): #adapted from https://github.com/yonigottesman/pii-model/blob/main/train.py
+def tokenize_robust(example, label2id, tokenizer, iob=True, ignore_subwords=True, model_id=""): #adapted from https://github.com/yonigottesman/pii-model/blob/main/train.py
+    """Tokenize the dataset and create the columns "true labels" and "predicted labels" to then evaluate the models.
+
+    Args:
+        example (_type_): a line in a dataset
+        label2id (dict): a dictionary mapping each label to its id, given my config.json
+        tokenizer (_type_): tokenizer for the given model that we want to evaluate
+        iob (bool, optional): whether we use iob tagging. Defaults to True.
+        ignore_subwords (bool, optional): whether we operate at subword level or not. Defaults to True.
+        model_id (str, optional): to know which model is being evaluated and enforce specific cases.. Defaults to "".
+
+    Returns:
+        _type_: dataset with input text, predicted and true labels (among other things)
+    """
 
     text, labels = example["source_text"], example["privacy_mask"] #runs only on one example: no batching!
     pred_labels = example["predicted_mask"] #run the model on the text
@@ -73,7 +86,7 @@ def tokenize_robust(example, label2id, tokenizer, iob=True, ignore_subwords=True
         tokenized.char_to_token(label["start"]): (label["start"], label["end"], label["label"]) for label in labels
     }
     num_labels_added = 0
-    num_special_labels = 0
+    # num_special_labels = 0
     while i < len(tokenized["input_ids"]):
         if tokenized["special_tokens_mask"][i] == 1:
             # num_special_labels +=1 #disclaimer: this count is probably not accurate. It was used for debugging.
@@ -101,7 +114,7 @@ def tokenize_robust(example, label2id, tokenizer, iob=True, ignore_subwords=True
                     true_token_labels.append(-100)
                 else:
                     if iob:
-                        if label in ["PASSPORTNUM", "AGE", "CREDITCARDNUMBER", "GENDER", "IDCARDNUM", "SEX"]: #special case for 500k dataset: RoBERTa model does not have I-labels for these elements in its id2label.
+                        if (label in ["PASSPORTNUM", "AGE", "CREDITCARDNUMBER", "GENDER", "IDCARDNUM", "SEX"]) and model_id == "yonigo/deberta-v3-base-pii-en": #special case for 500k dataset: RoBERTa model does not have I-labels for these elements in its id2label.
                             true_token_labels.append(label2id["B-" + label])
                         else:
                             true_token_labels.append(label2id["I-" + label])
@@ -159,7 +172,7 @@ def replicate_original_benchmark():
     final_benchmark_ds_300k = benchmark_ds_3OOk.map(
         tokenize_robust,
         batched=False,
-        fn_kwargs={"tokenizer": tokenizer_deberta, "label2id": {v:k for k,v in model_deberta.config.id2label.items()}}, #label2id in DeBERTa is not using the right k,v pairs.
+        fn_kwargs={"tokenizer": tokenizer_deberta, "label2id": {v:k for k,v in model_deberta.config.id2label.items()}, "model_id":model_id_deberta}, #label2id in DeBERTa is not using the right k,v pairs.
         remove_columns=[
             "source_text",
             "privacy_mask"
@@ -232,7 +245,7 @@ def format_benchmark_datasets():
     final_benchmark_ds_300k = benchmark_ds_3OOk.map(
         tokenize_robust,
         batched=False,
-        fn_kwargs={"tokenizer": tokenizer_deberta, "label2id": {v:k for k,v in model_deberta.config.id2label.items()}}, #label2id in DeBERTa is not using the right k,v pairs.
+        fn_kwargs={"tokenizer": tokenizer_deberta, "label2id": {v:k for k,v in model_deberta.config.id2label.items()}, "model_id":model_id_deberta}, #label2id in DeBERTa is not using the right k,v pairs.
         remove_columns=[
             "source_text",
             "privacy_mask"
