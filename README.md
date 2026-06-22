@@ -109,3 +109,25 @@ Entity-level scores:
 
 Here is the output of the classification report onthe concatenated datasets.
 
+
+# Conversion to ONNX
+
+## DeBERTa
+```
+`torch_dtype` is deprecated! Use `dtype` instead!
+Weight deduplication check in the ONNX export requires accelerate. Please install accelerate to run it.
+		-[x] values not close enough, max diff: 2.765655517578125e-05 (atol: 1e-05)
+The ONNX export succeeded with the warning: The maximum absolute difference between the output of the reference model and the ONNX exported model is not within the set tolerance 1e-05:
+- logits: max diff = 2.765655517578125e-05.
+ The exported model was saved at: /tmp/tmpr1zbo54x
+
+
+Quantization results:
+model_fp16: ok
+model_int8: ok
+model_uint8: ok
+model_quantized: ok (copy of model_int8.onnx)
+model_q4: ok
+model_q4f16: ok
+model_bnb4: ok
+```

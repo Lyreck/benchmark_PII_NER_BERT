@@ -140,7 +140,17 @@ def create_benchmark_datasets():
         #"BOD":"DATE"
     }
 
-    labels_mapping_500kTo300k = {v:k for k,v in labels_mapping_300kTo500k.items()}
+    labels_mapping_500kTo300k = {
+        "SOCIALNUM": "SOCIALNUMBER",
+        "IDCARDNUM": "IDCARD",
+        "BUILDINGNUM": "BUILDING",
+        "ZIPCODE": "POSTCODE",
+        "PASSPORTNUM": "PASSPORT",
+        "TELEPHONENUM": "TEL",
+        "DRIVERLICENSENUM": "DRIVERLICENSE",
+        "GIVENNAME": "GIVENNAME1",
+        "SURNAME": "LASTNAME1"  # map LASTNAME1 to SURNAME.
+    }
 
     benchmark_ds_3OOk = create_dataset_with_uniform_labels(ds300k, ds500k, labels_mapping_500kTo300k)
     benchmark_ds_5OOk = create_dataset_with_uniform_labels(ds500k, ds300k, labels_mapping_300kTo500k)
