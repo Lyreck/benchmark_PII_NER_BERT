@@ -106,6 +106,7 @@ def run_original_benchmark():
     # Test on 300k 
     # 1. Load the data
     df_test_300k = pd.read_parquet('benchmark_ds_300k_only.parquet')#.head(100)
+    print(df_test_300k)
 
     id2label_deberta = {
         "1": "I-BUILDING",
@@ -350,7 +351,7 @@ def run_our_benchmark():
 
 
 if __name__ == "__main__":
-    
+
     run_original_benchmark()
 
     run_our_benchmark()
