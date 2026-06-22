@@ -139,12 +139,19 @@ def tokenize_robust(example, label2id, tokenizer, iob=True, ignore_subwords=True
     # assert len(true_token_labels) == len(pred_token_labels), f"Issue: There are {len(true_token_labels)} true labels, and {len(pred_token_labels)} predicted labels. Labels should be attributed token-wise, there should be no discrepancy on the number. Here is the text {text}: and the predictions:{pred_labels}"
 
     # safety checks to verify that the predicted labels list and the true labels list have the same length, and see whether any discrepancy could be explained by special characters.
-    if len(true_token_labels) != len(pred_token_labels):
+    
+    try:
+        assert len(true_token_labels) != len(pred_token_labels) - 2
+    except:
         diff = len(true_token_labels) - len(pred_token_labels)
-        if diff >= 3:
-            print(f"There are {len(true_token_labels)} true labels and {len(pred_token_labels)} predicted labels (diff = {diff})")
-        # assert num_special_labels == len(true_token_labels) - len(pred_token_labels), f"I am counting too many special labels. Wrong counting ? \n There are {num_special_labels} special labels, for {len(true_token_labels)} true labels and {len(pred_token_labels)} predicted labels (diff = {len(true_token_labels) - len(pred_token_labels)})"
-        pass 
+        print(f"There are {len(true_token_labels)} true labels and {len(pred_token_labels)} predicted labels (diff = {diff})")
+    
+    # if len(true_token_labels) != len(pred_token_labels):
+    #     diff = len(true_token_labels) - len(pred_token_labels)
+    #     if diff >= 3:
+    #         print(f"There are {len(true_token_labels)} true labels and {len(pred_token_labels)} predicted labels (diff = {diff})")
+    #     # assert num_special_labels == len(true_token_labels) - len(pred_token_labels), f"I am counting too many special labels. Wrong counting ? \n There are {num_special_labels} special labels, for {len(true_token_labels)} true labels and {len(pred_token_labels)} predicted labels (diff = {len(true_token_labels) - len(pred_token_labels)})"
+    #     pass 
     return tokenized
 
 def replicate_original_benchmark():
