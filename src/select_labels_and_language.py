@@ -1,4 +1,5 @@
-## This code aims to filter the datasets to english, 
+########################### FILE 2 ###########################
+## This code aims to filter both the datasets to english, 
 ## and keep only the labels identified thanks to analyze_datasets_labels.py.
 
 from datasets import load_dataset, concatenate_datasets
@@ -100,7 +101,6 @@ def standardize_labels(example, labels_mapping:dict):
 def create_dataset_with_uniform_labels(ds1, ds2, labels_mapping:dict):
     # create fusion of 500k and 300k validation datasets, but with labels determined by the labels_mapping.
     # ds1 is the one whose labels do not change.
-    ds300k, ds500k = create_filtered_datasets()
 
     # map ds500k to the labels of ds300k
     ds2 = ds2.map(standardize_labels, batched=False, fn_kwargs={"labels_mapping" : labels_mapping})
@@ -120,7 +120,7 @@ def create_dataset_with_uniform_labels(ds1, ds2, labels_mapping:dict):
     labels_unique_to_ds2 = set(labels_mapping.keys())
     assert len(unique_labels.intersection(labels_unique_to_ds2)) == 0, f"There are some labels from ds2 ({labels_unique_to_ds2}) that are remaining in the concatenated dataset ({unique_labels})."
 
-    return benchmark_ds
+    return benchmark_ds, ds1 #return also ds1 to get the original dataset but only with the good labels, to compare with the original benchmarks.
 
 def create_benchmark_datasets():
     ds300k, ds500k = create_filtered_datasets()
@@ -149,7 +149,7 @@ def create_benchmark_datasets():
 
 if __name__ == "__main__":
 
-    benchmark_ds_3OOk, benchmark_ds_5OOk = create_benchmark_datasets()
+    (benchmark_ds_3OOk, benchmark_ds_3OOk_only), (benchmark_ds_5OOk, benchmark_ds_5OOk_only) = create_benchmark_datasets()
 
     benchmark_ds_3OOk.to_csv("benchmark_ds_3OOk.csv")
     benchmark_ds_5OOk.to_csv("benchmark_ds_5OOk.csv")

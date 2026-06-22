@@ -1,6 +1,6 @@
+########################### FILE 3 ###########################
 ## This file intends to take an input dataset with input text and privacy mask (with offsets);
-## and convert it to a new dataset following a CoLNN format compatible with HuggingFace's 
-## Evaluator class (https://huggingface.co/docs/evaluate/v0.4.6/en/package_reference/evaluator_classes#evaluate.TokenClassificationEvaluator)
+## and convert it to a new dataset that is accepted by scikit-learn's classification report.
 
 from datasets import Features, Sequence, Value, ClassLabel
 
@@ -50,79 +50,6 @@ def load_model_and_tokenizer(model_id):
     return tokenizer, model, pipe
 
 
-# def tokenize_and_align_labels_batched(examples, tokenizer, label2id):
-#     """
-#     Batched version of tokenization and alignment for dataset.map(batched=True). 
-#     Adapted from https://colab.research.google.com/github/huggingface/notebooks/blob/master/examples/token_classification.ipynb#scrollTo=vc0BSBLIIrJQ
-#     """
-#     # Initialize lists to store the batched outputs
-#     batch_words = []
-#     batch_labels = []
-
-#     # Access the underlying Hugging Face pre-tokenizer
-#     pre_tokenizer = tokenizer._tokenizer.pre_tokenizer
-
-#     # Iterate through each example in the batch
-#     for i in range(len(examples['source_text'])):
-#         source_text = examples['source_text'][i]
-#         privacy_mask = examples['privacy_mask'][i]
-
-#         # 1. Pre-tokenize the current string
-#         pre_tokenized = pre_tokenizer.pre_tokenize_str(source_text)
-#         pre_tokenized_words = [w for w, span in pre_tokenized]
-#         pre_tokenized_spans = [span for w, span in pre_tokenized]
-
-#         # 2. Assign labels to each word according to the offsets
-#         labels = []
-#         label_idx = 0
-#         #print(f"Privacy mask: {privacy_mask}")
-#         # Sanity check: verify that the len of privacy mask is equal to the number of labels being added.
-#         # print(f"Length of Privacy mask = {len(privacy_mask)}")
-#         num_of_labels_added=0
-#         if len(privacy_mask) != 0:  # if there are labeled entities
-#             for j, w in enumerate(pre_tokenized_words):
-#                 span = pre_tokenized_spans[j]
-#                 start, end = span[0], span[1]
-
-#                 # Safeguard against running out of labels in the privacy_mask list
-#                 if label_idx < len(privacy_mask):
-#                     next_non_O_label = privacy_mask[label_idx]
-#                 else:
-#                     next_non_O_label = None
-
-#                 if start == end:  # special character or empty span
-#                     labels.append(-100)
-
-#                 elif next_non_O_label and (start >= next_non_O_label['start']) and (end <= next_non_O_label['end']):
-#                     #print(f"Adding label {next_non_O_label["label"]} to word/token {w}")
-#                     num_of_labels_added +=1
-#                     labels.append(label2id[f"B-{next_non_O_label["label"]}"]) #[TODO] potential issue xhen evaluating; whatabout I- tags ?
-                    
-#                     # If we reached or passed the end of the current entity, move to the next one
-#                     if end >= next_non_O_label['end']:
-#                         label_idx += 1
-#                 else:
-#                     labels.append(label2id["O"])
-#         else:
-#             # If there are no labeled entities, everything is labeled as "O"
-#             labels = [label2id["O"] for _ in pre_tokenized_words]
-
-#         #print(f"Number of labels added = {num_of_labels_added}")
-#         if num_of_labels_added!=len(privacy_mask):
-#             print(f"There might be an issue. Length of privacy mask: {len(privacy_mask)}. Number of labels added: {num_of_labels_added}")
-#             print(f"Pre-tokenized words and spans: {pre_tokenized}")
-#             print(f"Privacy mask: {privacy_mask}")
-#             print("=======================================================================")
-#         # Append this example's results to our batch lists
-#         batch_words.append(pre_tokenized_words)
-#         batch_labels.append(labels)
-
-#     # dataset.map expects a dictionary of lists when batched=True
-#     return {
-#         "pre_tokenized_words": batch_words,
-#         "labels": batch_labels
-#     }
-
 # trying the alignment function of yonigo. The approach sounds more robust.
 
 def is_subword(text, tokenized, tokenizer, index):
@@ -149,7 +76,7 @@ def tokenize_robust(example, label2id, tokenizer, iob=True, ignore_subwords=True
     num_special_labels = 0
     while i < len(tokenized["input_ids"]):
         if tokenized["special_tokens_mask"][i] == 1:
-            num_special_labels +=1 #disclaimer: this count is probably not accurate
+            # num_special_labels +=1 #disclaimer: this count is probably not accurate. It was used for debugging.
             true_token_labels.append(-100)
             i += 1
         elif i not in start_token_to_label:
@@ -205,18 +132,13 @@ def tokenize_robust(example, label2id, tokenizer, iob=True, ignore_subwords=True
         pass 
     return tokenized
 
-def format_benchmark_datasets():
-    """Start from the benchmark datasets with good languages and labels, and format them such that they can be used with HuggingFace's Evaluator.
-
-    Returns:
-        tuple: 300k and 500K formatted benchmark datasets.
-    """
-
-    benchmark_ds_3OOk, benchmark_ds_5OOk = create_benchmark_datasets()
+def replicate_original_benchmark():
+    
+    (_, benchmark_ds_3OOk_only), (_, benchmark_ds_5OOk_only) = create_benchmark_datasets()
 
     # Filter empty strings: This prevents the 'ValueError: At least one input is required' error
-    benchmark_ds_3OOk = benchmark_ds_3OOk.filter(lambda x: x["source_text"] is not None and len(x["source_text"].strip()) > 0)
-    benchmark_ds_5OOk = benchmark_ds_5OOk.filter(lambda x: x["source_text"] is not None and len(x["source_text"].strip()) > 0)
+    benchmark_ds_3OOk = benchmark_ds_3OOk_only.filter(lambda x: x["source_text"] is not None and len(x["source_text"].strip()) > 0)
+    benchmark_ds_5OOk = benchmark_ds_5OOk_only.filter(lambda x: x["source_text"] is not None and len(x["source_text"].strip()) > 0)
 
     # Start with DeBERTa
     model_id_deberta = "yonigo/deberta-v3-base-pii-en"
@@ -230,7 +152,7 @@ def format_benchmark_datasets():
     # Adjust batch_size based on the GPU's VRAM (e.g., 16, 32, 64)
     for out in pipeline_deberta(KeyDataset(benchmark_ds_3OOk, "source_text"), batch_size=32):
         deberta_predictions.append(out)
-    ## 
+    
         
     benchmark_ds_3OOk = benchmark_ds_3OOk.add_column("predicted_mask", deberta_predictions)
 
@@ -243,21 +165,6 @@ def format_benchmark_datasets():
             "privacy_mask"
         ]
     )
-
-    # #Change columns and features of the dataset to match the target format.
-    # label_names_300k = list(model_deberta.config.id2label.values()) #label names in order of the ids.
-    # features_300k = Features({
-    #     "tokens": Sequence(feature=Value(dtype="string")),
-    #     "ner_tags": Sequence(feature=ClassLabel(names=label_names_300k)),
-    # })
-
-    # final_benchmark_ds_300k = (
-    #     benchmark_ds_300k
-    #     .rename_column("pre_tokenized_words", "tokens")
-    #     .rename_column("labels", "ner_tags")
-    #     .select_columns(["tokens", "ner_tags"])  # Drops source_text, privacy_mask, etc.
-    #     .cast(features_300k)                      # Enforces the ClassLabel string map
-    # )
 
     # Now, RoBERTa
     model_id_roberta = "Ar86Bat/multilang-pii-ner"
@@ -284,27 +191,86 @@ def format_benchmark_datasets():
     )
 
     print(final_benchmark_ds_300k)
-
     print(final_benchmark_ds_5OOk)
+    
+    benchmark_ds_3OOk.to_parquet('benchmark_ds_300k_only.parquet')
+    benchmark_ds_5OOk.to_parquet('benchmark_ds_500k_only.parquet')
 
-    # # Change columns and features of the dataset to match the target format.
-    # label_names_500k = list(model_roberta.config.id2label.values()) #label names in order of the ids.
-    # features_500k = Features({
-    #     "tokens": Sequence(feature=Value(dtype="string")),
-    #     "ner_tags": Sequence(feature=ClassLabel(names=label_names_500k)),
-    # })
+    return [(final_benchmark_ds_300k, tokenizer_deberta,model_deberta), (final_benchmark_ds_5OOk, tokenizer_roberta, model_roberta)]
 
-    # final_benchmark_ds_5OOk = (
-    #     benchmark_ds_5OOk
-    #     .rename_column("pre_tokenized_words", "tokens")
-    #     .rename_column("labels", "ner_tags")
-    #     .select_columns(["tokens", "ner_tags"])
-    #     .cast(features_500k)
-    # )
+
+
+def format_benchmark_datasets():
+    """Start from the benchmark datasets with good languages and labels, and format them such that they can be used with HuggingFace's Evaluator.
+
+    Returns:
+        tuple: 300k and 500K formatted benchmark datasets.
+    """
+
+    (benchmark_ds_3OOk, _), (benchmark_ds_5OOk, _) = create_benchmark_datasets()
+
+    # Filter empty strings: This prevents the 'ValueError: At least one input is required' error
+    benchmark_ds_3OOk = benchmark_ds_3OOk.filter(lambda x: x["source_text"] is not None and len(x["source_text"].strip()) > 0)
+    benchmark_ds_5OOk = benchmark_ds_5OOk.filter(lambda x: x["source_text"] is not None and len(x["source_text"].strip()) > 0)
+
+    # Start with DeBERTa
+    model_id_deberta = "yonigo/deberta-v3-base-pii-en"
+    tokenizer_deberta, model_deberta, pipeline_deberta = load_model_and_tokenizer(model_id_deberta)
+
+    # Tokenize sentences and attribute each token its label with the map function
+    print(f"Launching DeBERTa label alignment. label2id dict: {model_deberta.config.id2label}.")
+
+    # run the model efficiently on GPU
+    deberta_predictions = []
+    # Adjust batch_size based on the GPU's VRAM (e.g., 16, 32, 64)
+    for out in pipeline_deberta(KeyDataset(benchmark_ds_3OOk, "source_text"), batch_size=32):
+        deberta_predictions.append(out)
+    
+        
+    benchmark_ds_3OOk = benchmark_ds_3OOk.add_column("predicted_mask", deberta_predictions)
+
+    final_benchmark_ds_300k = benchmark_ds_3OOk.map(
+        tokenize_robust,
+        batched=False,
+        fn_kwargs={"tokenizer": tokenizer_deberta, "label2id": {v:k for k,v in model_deberta.config.id2label.items()}}, #label2id in DeBERTa is not using the right k,v pairs.
+        remove_columns=[
+            "source_text",
+            "privacy_mask"
+        ]
+    )
+
+    # Now, RoBERTa
+    model_id_roberta = "Ar86Bat/multilang-pii-ner"
+    tokenizer_roberta, model_roberta, pipeline_roberta = load_model_and_tokenizer(model_id_roberta)
+
+    print(f"Launching RoBERTa label alignment. label2id dict: {model_roberta.config.label2id}")
+
+    # batched predictions with RoBERTa
+    roberta_predictions = []
+    for out in pipeline_roberta(KeyDataset(benchmark_ds_5OOk, "source_text"), batch_size=32):
+        roberta_predictions.append(out)
+        
+    benchmark_ds_5OOk = benchmark_ds_5OOk.add_column("predicted_mask", roberta_predictions)
+
+    # Tokenize sentences and attribute each token its label with the map function
+    final_benchmark_ds_5OOk = benchmark_ds_5OOk.map(
+        tokenize_robust,
+        batched=False,
+        fn_kwargs={"tokenizer": tokenizer_roberta, "label2id": model_roberta.config.label2id},
+        remove_columns=[
+            "source_text",
+            "privacy_mask"
+        ]
+    )
+
+    print(final_benchmark_ds_300k)
+    print(final_benchmark_ds_5OOk)
 
     return [(final_benchmark_ds_300k, tokenizer_deberta,model_deberta), (final_benchmark_ds_5OOk, tokenizer_roberta, model_roberta)]
 
 if __name__ == "__main__":
+
+    replicate_original_benchmark() #create the original datasets only filtered to english and restrictive classes.
 
     out = format_benchmark_datasets()
 

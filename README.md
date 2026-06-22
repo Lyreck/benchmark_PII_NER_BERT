@@ -23,7 +23,7 @@ Both the models have a github repo with code. [This one](https://github.com/Ar86
 
 Following this benchmark, I will
 - take the best model, convert it to ONNX if necessary
-- Add it to the website, preferably with a WebWorker that runs in the "choice" and "editor" pages
+- Add it to the website, preferably with a WebWorker that runs in the "choice" and "editor" pages.
 
 Following this first real-world test, I could have time to
 - finetune my own BERT model using HF's Trainer API. Tune the good pre-processing and hyperparameters. Use multiple datasets to avoid relying only on ai4privacy's sometimes ill-labeled dataset, and non-realistic situations (there's a reason why Open AI corrected the dataset and used its own synthetic data source). **I think this will be very important for precision in our case because PII might be hidden in difficult context.
@@ -81,4 +81,31 @@ Final labels for benchmark (using the label mapping to get as much as possible.)
 Labels to ignore when running the model trained on 300k (DeBERTa): `["USERNAME", "COUNTRY", "STATE", "PASS", "BOD", "IP", "SECADRESS", "GEOCOORD", "CARDISSUER"]`
 
 Labels to ignore when running the model trained on 500k (RoBERTa): `["AGE", "TAXNUM", "CREDITCARDNUMBER", "GENDER"]`
+
+
+# Results
+
+## Expected results
+Based on the benchmarks provided by the people who trained each model.
+
+### DeBERTa
+
+| Training Loss | Epoch   | Step  | Validation Loss | Bod F1 | Building F1 | Cardissuer F1 | City F1 | Country F1 | Date F1 | Driverlicense F1 | Email F1 | Geocoord F1 | Givenname1 F1 | Givenname2 F1 | Idcard F1 | Ip F1  | Lastname1 F1 | Lastname2 F1 | Lastname3 F1 | Pass F1 | Passport F1 | Postcode F1 | Secaddress F1 | Sex F1 | Socialnumber F1 | State F1 | Street F1 | Tel F1 | Time F1 | Title F1 | Username F1 | Precision | Recall | F1     | Accuracy |
+|:-------------:|:-------:|:-----:|:---------------:|:------:|:-----------:|:-------------:|:-------:|:----------:|:-------:|:----------------:|:--------:|:-----------:|:-------------:|:-------------:|:---------:|:------:|:------------:|:------------:|:------------:|:-------:|:-----------:|:-----------:|:-------------:|:------:|:---------------:|:--------:|:---------:|:------:|:-------:|:--------:|:-----------:|:---------:|:------:|:------:|:--------:|
+| 0.0007        | 32.0856 | 30000 | 0.0767          | 0.9705 | 0.9869      | 1.0           | 0.9781  | 0.9773     | 0.9374  | 0.9645           | 0.9850   | 0.9769      | 0.8810        | 0.7996        | 0.9443    | 0.9873 | 0.8433       | 0.7641       | 0.7696       | 0.9603  | 0.9619      | 0.9820      | 0.9791        | 0.9782 | 0.9615          | 0.9878   | 0.9815    | 0.9767 | 0.9762  | 0.9668   | 0.9606      | 0.9504    | 0.9625 | 0.9564 | 0.9904   |
+
+### RoBERTa
+
+- Overall accuracy: 99.24%
+- Macro F1-score: 0.954
+- Weighted F1-score: 0.992
+
+Entity-level scores:
+- High F1-scores (>0.97) for common entities: AGE, BUILDINGNUM, CITY, DATE, EMAIL, GIVENNAME, STREET, TELEPHONENUM, TIME
+- Excellent performance on EMAIL and DATE (F1 ≈ 0.999)
+- Lower F1-scores for challenging/rare entities: DRIVERLICENSENUM (F1 ≈ 0.85), GENDER (F1 ≈ 0.83), PASSPORTNUM (F1 ≈ 0.88), SURNAME (F1 ≈ 0.85), SEX (F1 ≈ 0.84)
+
+## Our results
+
+Here is the output of the classification report onthe concatenated datasets.
 
