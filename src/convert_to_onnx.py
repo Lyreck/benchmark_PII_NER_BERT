@@ -62,8 +62,10 @@ if __name__ == "__main__":
 
     ## 4. Save to a file (optional)
 
+    onnx_program.save("deberta_v3_PII.onnx")
+
     ## 5. Push to the Hub
-    hf_hub_token = get_hf_hub_token()
-    onnx_program.push_to_hub("test-onnx-export-deberta-v3")
+    # hf_hub_token = get_hf_hub_token()
+    # onnx_program.push_to_hub("test-onnx-export-deberta-v3")
 
     ## 6. Compare performances
