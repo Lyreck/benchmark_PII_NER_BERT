@@ -167,3 +167,6 @@ Privacy mask: [{'value': 'Elica Qu', 'start': 4, 'end': 12, 'label': 'GIVENNAME'
 => this one is due to the blank space before "Saint-Nicolas" in the original privacy mask ;) The same goes with the 2 other problematic examples ! Mystery solved on this.
 
 WIth this new subword method, DeBERTa has XXX problematic cases in alignement.
+
+
+With the concatrenated datasets, we have a total of 15 problematic entries. That sounds reasonable.
