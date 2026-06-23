@@ -9,6 +9,7 @@ from transformers import AutoTokenizer, AutoModelForTokenClassification
 import torch
 import json
 from pathlib import Path
+import os
 from onnxruntime.quantization import quantize_dynamic, QuantType
 
 def get_hf_hub_token():
@@ -61,7 +62,23 @@ if __name__ == "__main__":
         opset_version=17,
         export_params=True,
         do_constant_folding=True,
+        keep_initializers_as_inputs=False,
     )
+    
+    # Force loading the model and saving it as a single file to bypass external data creation
+    import onnx
+    print("Consolidating ONNX external data into a single file...")
+    temp_model = onnx.load(onnx_path)
+    onnx.save_model(
+        temp_model,
+        onnx_path,
+        save_as_external_data=False
+    )
+    # Clean up the .onnx.data file if it was created
+    data_file_path = f"{onnx_path}.data"
+    if os.path.exists(data_file_path):
+        os.remove(data_file_path)
+        print(f"Removed temporary external data file: {data_file_path}")
     # ## 2. Get the PyTorch Model
 
     # # traced_model = torch.jit.trace(model)#, [tokens_tensor, segments_tensors]) #[TODO] check that the commented arguments are not vital.
