@@ -192,11 +192,11 @@ def replicate_original_benchmark():
     final_benchmark_ds_300k = benchmark_ds_3OOk.map(
         tokenize_robust,
         batched=False,
-        fn_kwargs={"tokenizer": tokenizer_deberta, "label2id": {v:k for k,v in model_deberta.config.id2label.items()}, "model_id":model_id_deberta}, #label2id in DeBERTa is not using the right k,v pairs.
-        remove_columns=[
-            "source_text",
-            "privacy_mask"
-        ]
+        fn_kwargs={"tokenizer": tokenizer_deberta, "label2id": {v:k for k,v in model_deberta.config.id2label.items()}, "model_id":model_id_deberta} #label2id in DeBERTa is not using the right k,v pairs.
+        # remove_columns=[
+        #     "source_text",
+        #     "privacy_mask"
+        # ]
     )
 
     # Now, RoBERTa
@@ -216,11 +216,11 @@ def replicate_original_benchmark():
     final_benchmark_ds_5OOk = benchmark_ds_5OOk.map(
         tokenize_robust,
         batched=False,
-        fn_kwargs={"tokenizer": tokenizer_roberta, "label2id": model_roberta.config.label2id, "model_id":model_id_roberta},
-        remove_columns=[
-            "source_text",
-            "privacy_mask"
-        ]
+        fn_kwargs={"tokenizer": tokenizer_roberta, "label2id": model_roberta.config.label2id, "model_id":model_id_roberta}
+        # remove_columns=[
+        #     "source_text",
+        #     "privacy_mask"
+        # ]
     )
 
     print(final_benchmark_ds_300k)
@@ -266,10 +266,10 @@ def format_benchmark_datasets():
         tokenize_robust,
         batched=False,
         fn_kwargs={"tokenizer": tokenizer_deberta, "label2id": {v:k for k,v in model_deberta.config.id2label.items()}, "model_id":model_id_deberta}, #label2id in DeBERTa is not using the right k,v pairs.
-        remove_columns=[
-            "source_text",
-            "privacy_mask"
-        ]
+        # remove_columns=[
+        #     "source_text",
+        #     "privacy_mask"
+        # ]
     )
 
     # Now, RoBERTa
@@ -289,11 +289,11 @@ def format_benchmark_datasets():
     final_benchmark_ds_5OOk = benchmark_ds_5OOk.map(
         tokenize_robust,
         batched=False,
-        fn_kwargs={"tokenizer": tokenizer_roberta, "label2id": model_roberta.config.label2id, "model_id":model_id_roberta},
-        remove_columns=[
-            "source_text",
-            "privacy_mask"
-        ]
+        fn_kwargs={"tokenizer": tokenizer_roberta, "label2id": model_roberta.config.label2id, "model_id":model_id_roberta}
+        # remove_columns=[
+        #     "source_text",
+        #     "privacy_mask"
+        # ]
     )
 
     print(final_benchmark_ds_300k)
