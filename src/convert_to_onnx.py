@@ -40,13 +40,25 @@ if __name__ == "__main__":
     example_inputs = (sample_tokens["input_ids"], sample_tokens["attention_mask"])
 
     # export to onnx
+    # NOTE: We use the legacy (TorchScript) exporter with dynamic_axes so that
+    # batch size and sequence length are variable at runtime. The dynamo=True
+    # exporter bakes the sample input's exact dimensions into the graph, which
+    # causes "Got invalid dimensions" errors in transformers.js when the user
+    # input has a different number of tokens than the sample.
     print("Converting to ONNX...")
-    onnx_program = torch.onnx.export(
+    onnx_path = "deberta_v3_PII.onnx"
+    torch.onnx.export(
         model,
         example_inputs,
-        dynamo=True,
+        onnx_path,
         input_names=["input_ids", "attention_mask"],
         output_names=["logits"],
+        dynamic_axes={
+            "input_ids": {0: "batch_size", 1: "sequence_length"},
+            "attention_mask": {0: "batch_size", 1: "sequence_length"},
+            "logits": {0: "batch_size", 1: "sequence_length"},
+        },
+        opset_version=17,
     )
     # ## 2. Get the PyTorch Model
 
@@ -62,8 +74,6 @@ if __name__ == "__main__":
     #### qstion: "eval" mode as I saw on some couple forums ? What does it do ?
 
     ## 4. Save to a file (optional)
-
-    onnx_program.save("deberta_v3_PII.onnx")
 
     # INT8 quantization
     print("Quantizing to INT8...")
@@ -81,12 +91,12 @@ if __name__ == "__main__":
         weight_type=QuantType.QUInt8,
     )
 
-    # FP16
-    import onnx
-    from onnxconverter_common import float16
-    onnx_model = onnx.load("deberta_v3_PII.onnx")
-    onnx_model_fp16 = float16.convert_float_to_float16(onnx_model)
-    onnx.save(onnx_model_fp16, "deberta_v3_PII_fp16.onnx")
+    # FP16 (not working)
+    # import onnx
+    # from onnxconverter_common import float16
+    # onnx_model = onnx.load("deberta_v3_PII.onnx")
+    # onnx_model_fp16 = float16.convert_float_to_float16(onnx_model)
+    # onnx.save(onnx_model_fp16, "deberta_v3_PII_fp16.onnx")
 
 
     ## 5. Push to the Hub
