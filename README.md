@@ -109,6 +109,230 @@ Entity-level scores:
 
 Here is the output of the classification report onthe concatenated datasets.
 
+--------------------------------------------------------------
+DeBERTa classification report, original training dataset only:
+/home/lld_fixe/code/benchmark_PII_NER_BERT/.venv/lib/python3.12/site-packages/sklearn/metrics/_classification.py:1879: UndefinedMetricWarning: Precision is ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, f"{metric.capitalize()} is", result.shape[0])
+/home/lld_fixe/code/benchmark_PII_NER_BERT/.venv/lib/python3.12/site-packages/sklearn/metrics/_classification.py:1879: UndefinedMetricWarning: Recall is ill-defined and being set to 0.0 in labels with no true samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, f"{metric.capitalize()} is", result.shape[0])
+/home/lld_fixe/code/benchmark_PII_NER_BERT/.venv/lib/python3.12/site-packages/sklearn/metrics/_classification.py:1879: UndefinedMetricWarning: F-score is ill-defined and being set to 0.0 in labels with no true nor predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, f"{metric.capitalize()} is", result.shape[0])
+/home/lld_fixe/code/benchmark_PII_NER_BERT/.venv/lib/python3.12/site-packages/sklearn/metrics/_classification.py:1879: UndefinedMetricWarning: Precision is ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, f"{metric.capitalize()} is", result.shape[0])
+/home/lld_fixe/code/benchmark_PII_NER_BERT/.venv/lib/python3.12/site-packages/sklearn/metrics/_classification.py:1879: UndefinedMetricWarning: Recall is ill-defined and being set to 0.0 in labels with no true samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, f"{metric.capitalize()} is", result.shape[0])
+/home/lld_fixe/code/benchmark_PII_NER_BERT/.venv/lib/python3.12/site-packages/sklearn/metrics/_classification.py:1879: UndefinedMetricWarning: F-score is ill-defined and being set to 0.0 in labels with no true nor predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, f"{metric.capitalize()} is", result.shape[0])
+/home/lld_fixe/code/benchmark_PII_NER_BERT/.venv/lib/python3.12/site-packages/sklearn/metrics/_classification.py:1879: UndefinedMetricWarning: Precision is ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, f"{metric.capitalize()} is", result.shape[0])
+/home/lld_fixe/code/benchmark_PII_NER_BERT/.venv/lib/python3.12/site-packages/sklearn/metrics/_classification.py:1879: UndefinedMetricWarning: Recall is ill-defined and being set to 0.0 in labels with no true samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, f"{metric.capitalize()} is", result.shape[0])
+/home/lld_fixe/code/benchmark_PII_NER_BERT/.venv/lib/python3.12/site-packages/sklearn/metrics/_classification.py:1879: UndefinedMetricWarning: F-score is ill-defined and being set to 0.0 in labels with no true nor predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, f"{metric.capitalize()} is", result.shape[0])
+                 precision    recall  f1-score   support
+
+     I-BUILDING       1.00      0.25      0.40         4
+         I-CITY       0.97      0.99      0.98       932
+         I-DATE       0.95      0.96      0.95      1199
+I-DRIVERLICENSE       0.99      0.95      0.97       853
+        I-EMAIL       0.83      0.10      0.18        50
+   I-GIVENNAME1       0.00      0.00      0.00        11
+   I-GIVENNAME2       0.00      0.00      0.00         0
+       I-IDCARD       0.00      0.00      0.00         9
+    I-LASTNAME1       0.84      0.66      0.74       117
+    I-LASTNAME2       0.79      0.83      0.81        18
+    I-LASTNAME3       1.00      0.25      0.40         4
+     I-PASSPORT       0.00      0.00      0.00        11
+     I-POSTCODE       0.94      0.98      0.96       599
+          I-SEX       0.95      0.92      0.94       297
+ I-SOCIALNUMBER       0.99      1.00      0.99       971
+       I-STREET       0.98      0.99      0.99      2686
+          I-TEL       0.99      0.99      0.99      1581
+         I-TIME       0.98      0.97      0.98      1589
+        I-TITLE       0.33      0.14      0.20        21
+     B-BUILDING       0.97      0.99      0.98      1943
+         B-CITY       0.99      0.99      0.99      2016
+         B-DATE       0.95      0.95      0.95      1702
+B-DRIVERLICENSE       0.97      0.97      0.97      2420
+        B-EMAIL       0.99      0.99      0.99      2612
+   B-GIVENNAME1       0.89      0.91      0.90      2018
+   B-GIVENNAME2       0.00      0.00      0.00         0
+       B-IDCARD       0.96      0.95      0.95      2656
+    B-LASTNAME1       0.86      0.88      0.87      2416
+    B-LASTNAME2       0.79      0.77      0.78       632
+    B-LASTNAME3       0.83      0.75      0.79       198
+     B-PASSPORT       0.95      0.98      0.97      2405
+     B-POSTCODE       0.98      0.99      0.99      1903
+          B-SEX       0.97      0.99      0.98      2004
+ B-SOCIALNUMBER       0.97      0.96      0.97      2553
+       B-STREET       0.99      0.99      0.99      1909
+          B-TEL       0.98      0.98      0.98      1995
+         B-TIME       0.98      0.98      0.98      3763
+        B-TITLE       0.98      0.98      0.98      1924
+              O       1.00      0.96      0.98    362341
+
+      micro avg       0.99      0.96      0.98    410362
+      macro avg       0.81      0.74      0.76    410362
+   weighted avg       0.99      0.96      0.98    410362
+
+-----------------------------------------------------------------
+RoBERTa classification report, original training dataset only:
+/home/lld_fixe/code/benchmark_PII_NER_BERT/.venv/lib/python3.12/site-packages/sklearn/metrics/_classification.py:1879: UndefinedMetricWarning: Precision is ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, f"{metric.capitalize()} is", result.shape[0])
+/home/lld_fixe/code/benchmark_PII_NER_BERT/.venv/lib/python3.12/site-packages/sklearn/metrics/_classification.py:1879: UndefinedMetricWarning: Recall is ill-defined and being set to 0.0 in labels with no true samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, f"{metric.capitalize()} is", result.shape[0])
+/home/lld_fixe/code/benchmark_PII_NER_BERT/.venv/lib/python3.12/site-packages/sklearn/metrics/_classification.py:1879: UndefinedMetricWarning: F-score is ill-defined and being set to 0.0 in labels with no true nor predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, f"{metric.capitalize()} is", result.shape[0])
+/home/lld_fixe/code/benchmark_PII_NER_BERT/.venv/lib/python3.12/site-packages/sklearn/metrics/_classification.py:1879: UndefinedMetricWarning: Precision is ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, f"{metric.capitalize()} is", result.shape[0])
+/home/lld_fixe/code/benchmark_PII_NER_BERT/.venv/lib/python3.12/site-packages/sklearn/metrics/_classification.py:1879: UndefinedMetricWarning: Recall is ill-defined and being set to 0.0 in labels with no true samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, f"{metric.capitalize()} is", result.shape[0])
+/home/lld_fixe/code/benchmark_PII_NER_BERT/.venv/lib/python3.12/site-packages/sklearn/metrics/_classification.py:1879: UndefinedMetricWarning: F-score is ill-defined and being set to 0.0 in labels with no true nor predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, f"{metric.capitalize()} is", result.shape[0])
+/home/lld_fixe/code/benchmark_PII_NER_BERT/.venv/lib/python3.12/site-packages/sklearn/metrics/_classification.py:1879: UndefinedMetricWarning: Precision is ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, f"{metric.capitalize()} is", result.shape[0])
+/home/lld_fixe/code/benchmark_PII_NER_BERT/.venv/lib/python3.12/site-packages/sklearn/metrics/_classification.py:1879: UndefinedMetricWarning: Recall is ill-defined and being set to 0.0 in labels with no true samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, f"{metric.capitalize()} is", result.shape[0])
+/home/lld_fixe/code/benchmark_PII_NER_BERT/.venv/lib/python3.12/site-packages/sklearn/metrics/_classification.py:1879: UndefinedMetricWarning: F-score is ill-defined and being set to 0.0 in labels with no true nor predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, f"{metric.capitalize()} is", result.shape[0])
+                    precision    recall  f1-score   support
+
+     B-BUILDINGNUM       0.98      0.98      0.98      3127
+            B-CITY       0.97      0.98      0.97      5067
+            B-DATE       0.99      1.00      1.00      4291
+B-DRIVERLICENSENUM       0.84      0.64      0.73       622
+           B-EMAIL       0.98      1.00      0.99      3476
+       B-GIVENNAME       0.97      0.99      0.98     24001
+       B-IDCARDNUM       0.88      0.91      0.89      2461
+     B-PASSPORTNUM       0.88      0.98      0.93      1097
+             B-SEX       0.83      0.73      0.78       758
+       B-SOCIALNUM       0.76      0.91      0.83       646
+          B-STREET       0.98      0.99      0.98      3571
+         B-SURNAME       0.86      0.83      0.84      9202
+    B-TELEPHONENUM       0.99      1.00      0.99      4724
+            B-TIME       1.00      1.00      1.00      5002
+           B-TITLE       0.96      1.00      0.98      3348
+         B-ZIPCODE       0.97      0.98      0.97      1132
+     I-BUILDINGNUM       1.00      0.56      0.71        18
+            I-CITY       0.98      0.43      0.59      2558
+            I-DATE       1.00      0.50      0.67      2978
+I-DRIVERLICENSENUM       1.00      0.30      0.46       114
+           I-EMAIL       1.00      0.40      0.57        30
+       I-GIVENNAME       0.92      0.42      0.58      7265
+       I-SOCIALNUM       1.00      0.25      0.39       106
+          I-STREET       0.99      0.20      0.33      5511
+         I-SURNAME       0.93      0.44      0.59      4131
+    I-TELEPHONENUM       0.94      0.48      0.63      3713
+            I-TIME       0.99      0.11      0.20      1853
+           I-TITLE       0.00      0.00      0.00         0
+         I-ZIPCODE       0.99      0.46      0.63       316
+                 O       0.96      0.99      0.97    410163
+
+         micro avg       0.96      0.95      0.95    511281
+         macro avg       0.92      0.68      0.74    511281
+      weighted avg       0.96      0.95      0.95    511281
+
+=================================
+Launching our benchmark to compare the two models on the same dataset...
+------------------------------------------------------------------------
+DeBERTa classification report, original concatenated 300k+500k datasets:
+/home/lld_fixe/code/benchmark_PII_NER_BERT/.venv/lib/python3.12/site-packages/sklearn/metrics/_classification.py:1879: UndefinedMetricWarning: Recall is ill-defined and being set to 0.0 in labels with no true samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, f"{metric.capitalize()} is", result.shape[0])
+/home/lld_fixe/code/benchmark_PII_NER_BERT/.venv/lib/python3.12/site-packages/sklearn/metrics/_classification.py:1879: UndefinedMetricWarning: Recall is ill-defined and being set to 0.0 in labels with no true samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, f"{metric.capitalize()} is", result.shape[0])
+/home/lld_fixe/code/benchmark_PII_NER_BERT/.venv/lib/python3.12/site-packages/sklearn/metrics/_classification.py:1879: UndefinedMetricWarning: Recall is ill-defined and being set to 0.0 in labels with no true samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, f"{metric.capitalize()} is", result.shape[0])
+                 precision    recall  f1-score   support
+
+     I-BUILDING       0.14      0.05      0.07        22
+         I-CITY       0.94      0.85      0.89      3491
+         I-DATE       0.98      0.81      0.89      4177
+I-DRIVERLICENSE       0.91      0.95      0.93       967
+        I-EMAIL       0.91      0.40      0.56        80
+   I-GIVENNAME1       0.32      0.00      0.01      7276
+   I-GIVENNAME2       0.00      0.00      0.00         0
+       I-IDCARD       0.00      0.00      0.00         9
+    I-LASTNAME1       0.75      0.08      0.14      4248
+    I-LASTNAME2       0.08      0.83      0.14        18
+    I-LASTNAME3       0.03      0.25      0.05         4
+     I-PASSPORT       0.00      0.00      0.00        11
+     I-POSTCODE       0.93      0.93      0.93       915
+          I-SEX       0.94      0.92      0.93       297
+ I-SOCIALNUMBER       0.92      0.99      0.96      1077
+       I-STREET       0.82      0.96      0.89      8197
+          I-TEL       0.99      0.92      0.95      5402
+         I-TIME       0.98      0.81      0.89      3442
+        I-TITLE       0.06      0.14      0.09        21
+     B-BUILDING       0.92      0.58      0.71      5069
+         B-CITY       0.96      0.85      0.90      7086
+         B-DATE       0.97      0.82      0.89      5993
+B-DRIVERLICENSE       0.67      0.95      0.79      3042
+        B-EMAIL       1.00      0.99      0.99      6088
+   B-GIVENNAME1       0.95      0.69      0.80     26019
+   B-GIVENNAME2       0.00      0.00      0.00         0
+       B-IDCARD       0.82      0.70      0.75      5117
+    B-LASTNAME1       0.57      0.70      0.63     11618
+    B-LASTNAME2       0.11      0.77      0.20       632
+    B-LASTNAME3       0.12      0.75      0.21       198
+     B-PASSPORT       0.89      0.94      0.91      3502
+     B-POSTCODE       0.84      0.88      0.86      3035
+          B-SEX       0.80      0.97      0.88      2762
+ B-SOCIALNUMBER       0.89      0.89      0.89      3199
+       B-STREET       0.96      0.94      0.95      5480
+          B-TEL       0.95      0.91      0.93      6719
+         B-TIME       0.94      0.81      0.87      8765
+        B-TITLE       0.95      0.91      0.93      5272
+              O       0.99      0.98      0.98    772492
+
+      micro avg       0.96      0.94      0.95    921742
+      macro avg       0.67      0.66      0.62    921742
+   weighted avg       0.97      0.94      0.95    921742
+
+------------------------------------------------------------------------
+RoBERTa classification report, original concatenated 500k+300k datasets:
+/home/lld_fixe/code/benchmark_PII_NER_BERT/.venv/lib/python3.12/site-packages/sklearn/metrics/_classification.py:1879: UndefinedMetricWarning: Precision is ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, f"{metric.capitalize()} is", result.shape[0])
+/home/lld_fixe/code/benchmark_PII_NER_BERT/.venv/lib/python3.12/site-packages/sklearn/metrics/_classification.py:1879: UndefinedMetricWarning: Precision is ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, f"{metric.capitalize()} is", result.shape[0])
+/home/lld_fixe/code/benchmark_PII_NER_BERT/.venv/lib/python3.12/site-packages/sklearn/metrics/_classification.py:1879: UndefinedMetricWarning: Precision is ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, f"{metric.capitalize()} is", result.shape[0])
+                    precision    recall  f1-score   support
+
+     B-BUILDINGNUM       0.76      0.95      0.85      5070
+            B-CITY       0.86      0.96      0.91      7083
+            B-DATE       0.65      0.99      0.78      5993
+B-DRIVERLICENSENUM       0.71      0.73      0.72      3042
+           B-EMAIL       0.84      1.00      0.91      6088
+       B-GIVENNAME       0.85      0.98      0.91     26019
+       B-IDCARDNUM       0.69      0.86      0.76      5126
+     B-PASSPORTNUM       0.71      0.92      0.80      3519
+             B-SEX       0.72      0.62      0.67      3059
+       B-SOCIALNUM       0.54      0.84      0.66      3199
+          B-STREET       0.84      0.96      0.89      5480
+         B-SURNAME       0.81      0.73      0.77     12447
+    B-TELEPHONENUM       0.82      0.99      0.90      6719
+            B-TIME       0.88      0.87      0.88      8765
+           B-TITLE       0.90      0.74      0.82      5272
+         B-ZIPCODE       0.73      0.89      0.80      3035
+     I-BUILDINGNUM       0.27      0.48      0.34        21
+            I-CITY       0.96      0.48      0.64      3490
+            I-DATE       0.70      0.51      0.59      4175
+I-DRIVERLICENSENUM       0.95      0.32      0.48       964
+           I-EMAIL       0.88      0.17      0.29        80
+       I-GIVENNAME       0.90      0.42      0.57      7276
+       I-SOCIALNUM       0.95      0.30      0.46      1077
+          I-STREET       0.96      0.34      0.50      8197
+         I-SURNAME       0.87      0.43      0.58      4266
+    I-TELEPHONENUM       0.89      0.48      0.62      5253
+            I-TIME       0.94      0.23      0.37      3442
+           I-TITLE       0.00      0.00      0.00        21
+         I-ZIPCODE       0.86      0.52      0.65       915
+                 O       0.97      0.97      0.97    772677
+
+         micro avg       0.94      0.93      0.94    921770
+         macro avg       0.78      0.66      0.67    921770
+      weighted avg       0.94      0.93      0.93    921770 
+
 
 # Conversion to ONNX
 
