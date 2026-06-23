@@ -22,8 +22,8 @@ from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
-DEFAULT_PARQUET_300K =  "benchmark_ds_3OOk.parquet"
-DEFAULT_PARQUET_500K =  "benchmark_ds_5OOk.parquet"
+DEFAULT_PARQUET_300K =  "benchmark_ds_300k.parquet"
+DEFAULT_PARQUET_500K =  "benchmark_ds_500k.parquet"
 
 ROBERTA_SPECIAL_NO_I = {"PASSPORTNUM", "AGE", "CREDITCARDNUMBER", "GENDER", "IDCARDNUM", "SEX"}
 
