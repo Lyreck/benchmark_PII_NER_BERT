@@ -9,6 +9,7 @@ from transformers import AutoTokenizer, AutoModelForTokenClassification
 import torch
 import json
 from pathlib import Path
+from onnxruntime.quantization import quantize_dynamic, QuantType
 
 def get_hf_hub_token():
     # Dynamically locate the script's directory
@@ -63,6 +64,34 @@ if __name__ == "__main__":
     ## 4. Save to a file (optional)
 
     onnx_program.save("deberta_v3_PII.onnx")
+
+    # INT8 quantization
+    print("Quantizing to INT8...")
+    quantize_dynamic(
+        "deberta_v3_PII.onnx",
+        "deberta_v3_PII_int8.onnx",
+        weight_type=QuantType.QInt8,
+    )
+
+    # UINT8 quantization
+    print("Quantizing to UINT8...")
+    quantize_dynamic(
+        "deberta_v3_PII.onnx",
+        "deberta_v3_PII_uint8.onnx",
+        weight_type=QuantType.QUInt8,
+    )
+
+    # FP16
+    onnx_program_fp16 = torch.onnx.export(
+        model,
+        example_inputs,
+        dynamo=True,
+        input_names=["input_ids", "attention_mask"],
+        output_names=["logits"],
+        fp16=True,
+    )
+    onnx_program_fp16.save("deberta_v3_PII_fp16.onnx")
+
 
     ## 5. Push to the Hub
     # hf_hub_token = get_hf_hub_token()
