@@ -55,7 +55,7 @@ if __name__ == "__main__":
     # example_inputs = pass #TODO
     # onnx_program = torch.onnx.export(traced_model, example_inputs, dynamo=True)
 
-    #### qstion: no "eval" mode as I saw on some couple forums ?
+    #### qstion: "eval" mode as I saw on some couple forums ? What does it do ?
 
     ## 4. Save to a file (optional)
 
