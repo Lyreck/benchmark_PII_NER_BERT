@@ -131,3 +131,25 @@ model_q4: ok
 model_q4f16: ok
 model_bnb4: ok
 ```
+
+
+
+
+# Debugging the annotations
+
+A weird example among many
+
+```There might be an issue. Length of privacy mask: 3. Number of labels added: 2. However, note that this might just be due to the dataset's flaws: it contains some overlapping labels and annotation errors.
+Added labels: [('<s>', 'SPEC'), ('Design', 'SPEC'), ('an', 'SPEC'), ('exhibi', 'SPEC'), ('t', 'O'), ('featuring', 'SPEC'), ('the', 'SPEC'), ('art', 'SPEC'), ('work', 'O'), ('of', 'SPEC'), ('Gerard', 'B-GIVENNAME'), ('ine', 'I-GIVENNAME'), ('Sum', 'SPEC'), ('eja', 'I-GIVENNAME'), ('al', 'B-SURNAME'), ('Do', 'SPEC'), ('uri', 'I-SURNAME'), (',', 'O'), ('a', 'SPEC'), ('50-', 'SPEC'), ('year', 'O'), ('-', 'O'), ('old', 'O'), ('artist', 'SPEC'), ('from', 'SPEC'), ('South', 'SPEC'), ('Sur', 'SPEC'), ('rey', 'O'), ('.', 'O'), ('</s>', 'SPEC')]
+Privacy mask: [{'value': 'Gerardine Sumeja', 'start': 43, 'end': 59, 'label': 'GIVENNAME'}, {'value': 'al Douri', 'start': 60, 'end': 68, 'label': 'SURNAME'}, {'value': ' South Surrey', 'start': 96, 'end': 109, 'label': 'CITY'}]```
+
+Al-Douri : Do is classified as SPEC
+South Surre:y: classified as SPEC for SOUth and Sur !! . 
+Only <s> and </s> should be labeled as SPEC. What is happening ??
+
+
+
+This seems to be a problem more focused on RoBERTa. Bugs with DeBERTa happen, but they are more seldom and SPEC characters usually don't go further than the second token, e.g.:
+```There might be an issue. Length of privacy mask: 5. Number of labels added: 4. However, note that this might just be due to the dataset's flaws: it contains some overlapping labels and annotation errors.
+Added labels: [('[CLS]', 'SPEC'), ('C', 'SPEC'), ('7', 'O'), ('4', 'O'), ('.', 'O'), ('Applicant', 'O'), ('ID', 'O'), (':', 'O'), ('266', 'B-SOCIALNUMBER'), ('107', 'I-SOCIALNUMBER'), ('49', 'I-SOCIALNUMBER'), ('45', 'I-SOCIALNUMBER'), ('-', 'O'), ('IP', 'O'), ('Address', 'O'), (':', 'O'), ('d', 'O'), ('8', 'O'), ('cd', 'O'), (':', 'O'), ('1', 'O'), ('aaa', 'O'), (':', 'O'), ('63', 'O'), ('ba', 'O'), (':', 'O'), ('844', 'O'), ('8', 'O'), (':', 'O'), ('7', 'O'), ('fe', 'O'), ('2', 'O'), (':', 'O'), ('6', 'O'), ('ea', 'O'), ('5', 'O'), (':', 'O'), ('21', 'O'), ('a', 'O'), ('1', 'O'), (':', 'O'), ('393', 'O'), ('b', 'O'), ('-', 'O'), ('Password', 'O'), (':', 'O'), ('J', 'O'), ('3', 'O'), ('b', 'O'), ('X', 'O'), ('$', 'O'), ('1', 'O'), ('q', 'O'), ('0', 'O'), ('&', 'O'), (']', 'O'), ('5', 'O'), ('.', 'O'), ('Applicant', 'O'), ('ID', 'O'), (':', 'O'), ('306', 'B-SOCIALNUMBER'), ('272', 'I-SOCIALNUMBER'), ('5', 'I-SOCIALNUMBER'), ('393', 'I-SOCIALNUMBER'), ('-', 'O'), ('IP', 'O'), ('Address', 'O'), (':', 'O'), ('225', 'O'), ('.', 'O'), ('5', 'O'), ('.', 'O'), ('202', 'O'), ('.', 'O'), ('173', 'O'), ('-', 'O'), ('Password', 'O'), (':', 'O'), ('V', 'O'), ('k', 'O'), ('.', 'O'), ('.', 'O'), ('.', 'O'), ('and', 'O'), ('so', 'O'), ('on', 'O'), ('for', 'O'), ('all', 'O'), ('the', 'O'), ('application', 'O'), ('IDs', 'O'), ('listed', 'O'), ('.', 'O'), ('Please', 'O'), ('be', 'O'), ('informed', 'O'), ('that', 'O'), ('a', 'O'), ('scholarship', 'O'), ('award', 'O'), ('ceremony', 'O'), ('will', 'O'), ('be', 'O'), ('held', 'O'), ('on', 'O'), ('March', 'B-DATE'), ('22', 'I-DATE'), ('nd', 'I-DATE'), (',', 'I-DATE'), ('20', 'I-DATE'), ('78', 'I-DATE'), ('at', 'I-DATE'), ('21', 'I-DATE'), ('o', 'I-DATE'), ("'", 'I-DATE'), ('clock', 'I-DATE'), ('at', 'I-DATE'), ('the', 'I-DATE'), ('following', 'I-DATE'), ('location', 'O'), (':', 'O'), ('Venue', 'O'), (':', 'O'), ('Rue', 'B-STREET'), ('des', 'I-STREET'), ('École', 'I-STREET'), ('s', 'I-STREET'), (',', 'I-STREET'), ('POST', 'I-STREET'), ('CODE', 'I-STREET'), ('_', 'I-STREET'), ('BG', 'I-STREET'), ('(', 'I-STREET'), ('TA', 'I-STREET'), ('9', 'I-STREET'), (',', 'O'), ('Great', 'O'), ('Britain', 'O'), ('[SEP]', 'SPEC')]
+Privacy mask: [{'value': '266 107 4945', 'start': 21, 'end': 33, 'label': 'SOCIALNUMBER'}, {'value': '306 272 5393', 'start': 135, 'end': 147, 'label': 'SOCIALNUMBER'}, {'value': "March 22nd, 2078 at TIME_BG(21 o'clock", 'start': 317, 'end': 355, 'label': 'DATE'}, {'value': "21 o'clock at the following location:\n\nVenue: STREET_BG(Rue des Écoles", 'start': 337, 'end': 407, 'label': 'TIME'}, {'value': 'Rue des Écoles, POSTCODE_BG(TA9', 'start': 383, 'end': 414, 'label': 'STREET'}]```

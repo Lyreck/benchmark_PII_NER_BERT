@@ -50,14 +50,24 @@ def load_model_and_tokenizer(model_id):
     return tokenizer, model, pipe
 
 
-# trying the alignment function of yonigo. The approach sounds more robust.
+# trying the alignment function of yonigo. The approach seems more robust.
+
+# def is_subword(text, tokenized, tokenizer, index):
+#     word = tokenizer.convert_ids_to_tokens(tokenized["input_ids"][index])
+#     start_ind, end_ind = tokenized["offset_mapping"][index]
+#     word_ref = text[start_ind:end_ind]
+#     is_subword = len(word) != len(word_ref)
+#     return is_subword
 
 def is_subword(text, tokenized, tokenizer, index):
+    # A token is a subword if its offset_mapping start doesn't match
+    # the end of the previous non-subword token's offset_mapping.
+    # Simpler: check if the token string starts with the continuation marker.
     word = tokenizer.convert_ids_to_tokens(tokenized["input_ids"][index])
-    start_ind, end_ind = tokenized["offset_mapping"][index]
-    word_ref = text[start_ind:end_ind]
-    is_subword = len(word) != len(word_ref)
-    return is_subword
+    # RoBERTa: Ġ = word boundary, no Ġ = subword
+    # BERT: no ## = word boundary, ## = subword  
+    # SentencePiece: ▁ = word boundary, no ▁ = subword
+    return not word.startswith(("Ġ", "▁", "##"))
 
 def tokenize_robust(example, label2id, tokenizer, iob=True, ignore_subwords=True, model_id=""): #adapted from https://github.com/yonigottesman/pii-model/blob/main/train.py
     """Tokenize the dataset and create the columns "true labels" and "predicted labels" to then evaluate the models.
@@ -74,6 +84,7 @@ def tokenize_robust(example, label2id, tokenizer, iob=True, ignore_subwords=True
         _type_: dataset with input text, predicted and true labels (among other things)
     """
 
+
     text, labels = example["source_text"], example["privacy_mask"] #runs only on one example: no batching!
     pred_labels = example["predicted_mask"] #run the model on the text
     pred_token_labels = [label2id[label["entity"]] for label in pred_labels]
@@ -83,7 +94,7 @@ def tokenize_robust(example, label2id, tokenizer, iob=True, ignore_subwords=True
 
     tokenized = tokenizer(text, return_offsets_mapping=True, return_special_tokens_mask=True)
     start_token_to_label = {
-        tokenized.char_to_token(label["start"]): (label["start"], label["end"], label["label"]) for label in labels
+        tokenized.char_to_token(label["start"]): (label["start"], label["end"], label["label"]) for label in labels #each token has a label which starts and ends at some point. From what I understand, char_to_token maps the index number where we are in the word to a label.
     }
     num_labels_added = 0
     # num_special_labels = 0
@@ -92,9 +103,9 @@ def tokenize_robust(example, label2id, tokenizer, iob=True, ignore_subwords=True
             # num_special_labels +=1 #disclaimer: this count is probably not accurate. It was used for debugging.
             true_token_labels.append(-100)
             i += 1
-        elif i not in start_token_to_label:
+        elif i not in start_token_to_label: #if token number i is not a labeled entity
             if ignore_subwords and is_subword(text, tokenized, tokenizer, i):
-                true_token_labels.append(-100)
+                true_token_labels.append(-100) #this means the subwords are labeled -100. Mostly important for training. but [TODO] beware of mismatch between subwords and second words: it depends on how the model outputs results !!
             else:
                 true_token_labels.append(label2id["O"])
             i += 1
@@ -110,7 +121,7 @@ def tokenize_robust(example, label2id, tokenizer, iob=True, ignore_subwords=True
                         num_labels_added +=1
                     else:
                         true_token_labels.append(label2id[label])
-                elif ignore_subwords and is_subword(text, tokenized, tokenizer, j):
+                elif ignore_subwords and is_subword(text, tokenized, tokenizer, j): #this might be where roberta fails
                     true_token_labels.append(-100)
                 else:
                     if iob:
