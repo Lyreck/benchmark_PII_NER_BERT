@@ -26,17 +26,20 @@ def get_hf_hub_token():
 if __name__ == "__main__":
     ## 1. Get the HF model
 
-    tokenizer = AutoTokenizer.from_pretrained("yonigo/deberta-v3-base-pii-en", torchscript = True)
-    model = AutoModelForTokenClassification.from_pretrained("yonigo/deberta-v3-base-pii-en", torchscript=True)
+    print("Getting model...")
+    tokenizer = AutoTokenizer.from_pretrained("yonigo/deberta-v3-base-pii-en")#, torchscript = True)
+    model = AutoModelForTokenClassification.from_pretrained("yonigo/deberta-v3-base-pii-en")#, torchscript=True)
 
     model.eval()
 
     # create sample input for onnx export
+    print("Creating sample input...")
     sample_text = "Hello, my name is John Smith."
     sample_tokens = tokenizer(sample_text, return_tensors="pt")
     example_inputs = (sample_tokens["input_ids"], sample_tokens["attention_mask"])
 
     # export to onnx
+    print("Converting to ONNX...")
     onnx_program = torch.onnx.export(
         model,
         example_inputs,
