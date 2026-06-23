@@ -59,6 +59,8 @@ if __name__ == "__main__":
             "logits": {0: "batch_size", 1: "sequence_length"},
         },
         opset_version=17,
+        export_params=True,
+        do_constant_folding=True,
     )
     # ## 2. Get the PyTorch Model
 
