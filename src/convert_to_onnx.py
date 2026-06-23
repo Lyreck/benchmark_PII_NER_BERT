@@ -82,15 +82,11 @@ if __name__ == "__main__":
     )
 
     # FP16
-    onnx_program_fp16 = torch.onnx.export(
-        model,
-        example_inputs,
-        dynamo=True,
-        input_names=["input_ids", "attention_mask"],
-        output_names=["logits"],
-        fp16=True,
-    )
-    onnx_program_fp16.save("deberta_v3_PII_fp16.onnx")
+    import onnx
+    from onnxconverter_common import float16
+    onnx_model = onnx.load("deberta_v3_PII.onnx")
+    onnx_model_fp16 = float16.convert_float_to_float16(onnx_model)
+    onnx.save(onnx_model_fp16, "deberta_v3_PII_fp16.onnx")
 
 
     ## 5. Push to the Hub
